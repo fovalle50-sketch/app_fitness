@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Lexend", sans-serif;
+
+  --color-accent: #2ae500;
+  --color-surface-dark: #131313;
+  --color-surface-card: #1c1b1b;
+  --color-surface-container: #201f1f;
+  --color-primary-blue: #b9c7e4;
+}
+
+@layer base {
+  body {
+    @apply bg-surface-dark text-white font-sans antialiased;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
