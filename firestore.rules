@@ -1,0 +1,198 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - name: string (optional)
+    //   - role: string (required, 'admin' or 'coach')
+    //
+    // Collection: athletes
+    // Document ID: athleteId
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - birthDate: string (required)
+    //   - gender: string (required)
+    //   - weight: number (required)
+    //   - activityLevel: number (optional)
+    //   - status: string (required)
+    //   - imageUrl: string (optional)
+    //   - uid: string (required, owner)
+    //
+    // Collection: exercises
+    // Document ID: exerciseId
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - description: string (optional)
+    //   - category: string (required)
+    //   - requiresLoad: bool (required)
+    //
+    // Collection: evaluations
+    // Document ID: evaluationId
+    // Fields:
+    //   - id: string (required)
+    //   - athleteId: string (required)
+    //   - athleteName: string (optional)
+    //   - date: string (required)
+    //   - exercises: list (required)
+    //   - finalGrade: number (required)
+    //   - status: string (required)
+    //   - uid: string (required, owner)
+    //
+    // Collection: evaluationPlans
+    // Document ID: planId
+    // Fields:
+    //   - id: string (required)
+    //   - athleteId: string (required)
+    //   - athleteName: string (optional)
+    //   - date: string (required)
+    //   - exercises: list (required)
+    //   - status: string (required)
+    //   - uid: string (required, owner)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "fovalle50@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == resource.data.uid;
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'email', 'name', 'role']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['admin', 'coach'];
+    }
+
+    function isValidAthlete(data) {
+      return hasOnlyAllowedFields(['id', 'name', 'birthDate', 'gender', 'weight', 'activityLevel', 'status', 'imageUrl', 'uid']) &&
+             data.id is string && data.id.size() > 0 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.birthDate is string &&
+             data.gender in ['Masculino', 'Femenino'] &&
+             data.weight is number && data.weight > 0 &&
+             data.status in ['Pro Elite', 'Alto Rendimiento', 'Fatiga Detectada'] &&
+             data.uid is string && data.uid == request.auth.uid;
+    }
+
+    function isValidExercise(data) {
+      return hasOnlyAllowedFields(['id', 'name', 'description', 'category', 'requiresLoad']) &&
+             data.id is string && data.id.size() > 0 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.category in ['Tracción', 'Empuje', 'Pierna', 'Core', 'Cardio'] &&
+             data.requiresLoad is bool;
+    }
+
+    function isValidEvaluation(data) {
+      return hasOnlyAllowedFields(['id', 'athleteId', 'athleteName', 'date', 'exercises', 'finalGrade', 'status', 'uid']) &&
+             data.id is string && data.id.size() > 0 &&
+             data.athleteId is string &&
+             data.date is string &&
+             data.exercises is list &&
+             data.finalGrade is number &&
+             data.status in ['Alto', 'Medio', 'Bajo'] &&
+             data.uid is string && data.uid == request.auth.uid;
+    }
+
+    function isValidEvaluationPlan(data) {
+      return hasOnlyAllowedFields(['id', 'athleteId', 'athleteName', 'date', 'exercises', 'status', 'uid']) &&
+             data.id is string && data.id.size() > 0 &&
+             data.athleteId is string &&
+             data.date is string &&
+             data.exercises is list &&
+             data.status in ['Planificada', 'En Progreso', 'Completada'] &&
+             data.uid is string && data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) && request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /athletes/{athleteId} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidAthlete(request.resource.data);
+      allow update: if isAuthenticated() && isValidAthlete(request.resource.data) && (resource.data.uid == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+    }
+
+    match /exercises/{exerciseId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /evaluations/{evaluationId} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidEvaluation(request.resource.data);
+      allow update: if isAuthenticated() && isValidEvaluation(request.resource.data) && (resource.data.uid == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+    }
+
+    match /evaluationPlans/{planId} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidEvaluationPlan(request.resource.data);
+      allow update: if isAuthenticated() && isValidEvaluationPlan(request.resource.data) && (resource.data.uid == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+    }
+  }
+}

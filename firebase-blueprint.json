@@ -1,0 +1,128 @@
+{
+  "entities": {
+    "athlete": {
+      "title": "Athlete",
+      "description": "An athlete registered in the system.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "birthDate": { "type": "string", "format": "date" },
+        "gender": { "type": "string", "enum": ["Masculino", "Femenino"] },
+        "weight": { "type": "number" },
+        "activityLevel": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pro Elite", "Alto Rendimiento", "Fatiga Detectada"] },
+        "imageUrl": { "type": "string" },
+        "uid": { "type": "string", "description": "The UID of the user who created this athlete." }
+      },
+      "required": ["id", "name", "birthDate", "gender", "weight", "status", "uid"]
+    },
+    "exercise": {
+      "title": "Exercise",
+      "description": "An exercise in the library.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["Tracción", "Empuje", "Pierna", "Core", "Cardio"] },
+        "requiresLoad": { "type": "boolean" }
+      },
+      "required": ["id", "name", "category", "requiresLoad"]
+    },
+    "evaluation": {
+      "title": "Evaluation",
+      "description": "A completed evaluation for an athlete.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "athleteId": { "type": "string" },
+        "athleteName": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "exercises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "exerciseName": { "type": "string" },
+              "reps": { "type": "number" },
+              "load": { "type": "number" },
+              "score": { "type": "number" }
+            }
+          }
+        },
+        "finalGrade": { "type": "number" },
+        "status": { "type": "string", "enum": ["Alto", "Medio", "Bajo"] },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "athleteId", "date", "exercises", "finalGrade", "status", "uid"]
+    },
+    "evaluationPlan": {
+      "title": "Evaluation Plan",
+      "description": "A planned evaluation for an athlete.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "athleteId": { "type": "string" },
+        "athleteName": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "exercises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "exerciseId": { "type": "string" },
+              "exerciseName": { "type": "string" },
+              "targetReps": { "type": "number" },
+              "targetTime": { "type": "string" },
+              "targetLoad": { "type": "number" },
+              "actualReps": { "type": "number" },
+              "actualLoad": { "type": "number" },
+              "score": { "type": "number" },
+              "isCompleted": { "type": "boolean" }
+            }
+          }
+        },
+        "status": { "type": "string", "enum": ["Planificada", "En Progreso", "Completada"] },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "athleteId", "date", "exercises", "status", "uid"]
+    },
+    "user": {
+      "title": "User",
+      "description": "A user of the system.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "coach"] }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/athletes/{athleteId}": {
+      "schema": "athlete",
+      "description": "Collection of athletes."
+    },
+    "/exercises/{exerciseId}": {
+      "schema": "exercise",
+      "description": "Collection of exercises."
+    },
+    "/evaluations/{evaluationId}": {
+      "schema": "evaluation",
+      "description": "Collection of completed evaluations."
+    },
+    "/evaluationPlans/{planId}": {
+      "schema": "evaluationPlan",
+      "description": "Collection of evaluation plans."
+    },
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "Collection of users."
+    }
+  }
+}

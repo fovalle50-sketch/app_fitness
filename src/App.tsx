@@ -15,107 +15,157 @@ import { ExerciseManagement } from './components/ExerciseManagement';
 import { Login } from './components/Login';
 import { Screen, Athlete, Evaluation, Exercise, EvaluationPlan } from './types';
 import { Plus, LayoutGrid, Users, Dumbbell, BarChart3, Settings2, LogIn } from 'lucide-react';
-
-const INITIAL_ATHLETES: Athlete[] = [
-  {
-    id: '1',
-    name: 'Marco Rossi',
-    birthDate: '1999-05-15',
-    gender: 'Masculino',
-    weight: 78.4,
-    activityLevel: 92,
-    status: 'Pro Elite',
-    imageUrl: 'https://picsum.photos/seed/athlete1/200/200',
-  },
-  {
-    id: '2',
-    name: 'Elena Vargas',
-    birthDate: '2001-11-20',
-    gender: 'Femenino',
-    weight: 62.1,
-    activityLevel: 78,
-    status: 'Alto Rendimiento',
-    imageUrl: 'https://picsum.photos/seed/athlete2/200/200',
-  },
-  {
-    id: '3',
-    name: 'Javier Mendez',
-    birthDate: '1994-03-10',
-    gender: 'Masculino',
-    weight: 89.2,
-    activityLevel: 34,
-    status: 'Fatiga Detectada',
-    imageUrl: 'https://picsum.photos/seed/athlete3/200/200',
-  },
-];
-
-const INITIAL_EXERCISES: Exercise[] = [
-  { id: '1', name: 'Dominadas', description: 'Tracción vertical de tren superior.', category: 'Tracción', requiresLoad: false },
-  { id: '2', name: 'Flexiones', description: 'Empuje horizontal de tren superior.', category: 'Empuje', requiresLoad: false },
-  { id: '3', name: 'Sentadillas', description: 'Empuje vertical de tren inferior.', category: 'Pierna', requiresLoad: false },
-  { id: '4', name: 'Burpees', description: 'Ejercicio metabólico de cuerpo completo.', category: 'Cardio', requiresLoad: false },
-  { id: '5', name: 'Peso Muerto', description: 'Tracción vertical de tren inferior.', category: 'Pierna', requiresLoad: true },
-];
+import { 
+  auth, 
+  db, 
+  onAuthStateChanged, 
+  signOut, 
+  User,
+  collection,
+  onSnapshot,
+  doc,
+  setDoc,
+  deleteDoc,
+  addDoc,
+  query,
+  where,
+  OperationType,
+  handleFirestoreError
+} from './firebase';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
   const [activeScreen, setActiveScreen] = useState<Screen>('dashboard');
-  const [athletes, setAthletes] = useState<Athlete[]>(INITIAL_ATHLETES);
-  const [exercises, setExercises] = useState<Exercise[]>(INITIAL_EXERCISES);
+  const [athletes, setAthletes] = useState<Athlete[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [evaluationPlans, setEvaluationPlans] = useState<EvaluationPlan[]>([]);
   const [isAddingAthlete, setIsAddingAthlete] = useState(false);
 
+  // Auth Listener
   useEffect(() => {
-    const authStatus = localStorage.getItem('kinetic_auth');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setIsAuthReady(true);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const handleLogin = (password: string) => {
-    if (password === 'kinetic2026') {
-      setIsAuthenticated(true);
-      localStorage.setItem('kinetic_auth', 'true');
-      return true;
+  // Data Sync Listeners
+  useEffect(() => {
+    if (!user) {
+      setAthletes([]);
+      setExercises([]);
+      setEvaluations([]);
+      setEvaluationPlans([]);
+      return;
     }
-    return false;
+
+    // Athletes Sync
+    const athletesUnsubscribe = onSnapshot(collection(db, 'athletes'), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Athlete));
+      setAthletes(data);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'athletes'));
+
+    // Exercises Sync
+    const exercisesUnsubscribe = onSnapshot(collection(db, 'exercises'), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Exercise));
+      setExercises(data);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'exercises'));
+
+    // Evaluations Sync
+    const evaluationsUnsubscribe = onSnapshot(collection(db, 'evaluations'), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Evaluation));
+      setEvaluations(data);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'evaluations'));
+
+    // Evaluation Plans Sync
+    const plansUnsubscribe = onSnapshot(collection(db, 'evaluationPlans'), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as EvaluationPlan));
+      setEvaluationPlans(data);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'evaluationPlans'));
+
+    return () => {
+      athletesUnsubscribe();
+      exercisesUnsubscribe();
+      evaluationsUnsubscribe();
+      plansUnsubscribe();
+    };
+  }, [user]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('kinetic_auth');
+  const handleAddAthlete = async (newAthlete: Athlete) => {
+    if (!user) return;
+    try {
+      const athleteData = { ...newAthlete, uid: user.uid };
+      await setDoc(doc(db, 'athletes', newAthlete.id), athleteData);
+      setIsAddingAthlete(false);
+      setActiveScreen('alumnos');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'athletes');
+    }
   };
 
-  const handleAddAthlete = (newAthlete: Athlete) => {
-    setAthletes([...athletes, newAthlete]);
-    setIsAddingAthlete(false);
-    setActiveScreen('alumnos');
+  const handleDeleteAthlete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'athletes', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'athletes');
+    }
   };
 
-  const handleDeleteAthlete = (id: string) => {
-    setAthletes(athletes.filter(a => a.id !== id));
+  const handleAddExercise = async (newExercise: Exercise) => {
+    try {
+      await setDoc(doc(db, 'exercises', newExercise.id), newExercise);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'exercises');
+    }
   };
 
-  const handleAddExercise = (newExercise: Exercise) => {
-    setExercises([...exercises, newExercise]);
+  const handleDeleteExercise = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'exercises', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'exercises');
+    }
   };
 
-  const handleDeleteExercise = (id: string) => {
-    setExercises(exercises.filter(ex => ex.id !== id));
+  const handleSaveEvaluation = async (evaluation: Evaluation) => {
+    if (!user) return;
+    try {
+      const evalData = { ...evaluation, uid: user.uid };
+      await setDoc(doc(db, 'evaluations', evaluation.id), evalData);
+      setActiveScreen('reportes');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'evaluations');
+    }
   };
 
-  const handleSaveEvaluation = (evaluation: Evaluation) => {
-    setEvaluations([evaluation, ...evaluations]);
-    setActiveScreen('reportes');
+  const handleSavePlan = async (plan: EvaluationPlan) => {
+    if (!user) return;
+    try {
+      const planData = { ...plan, uid: user.uid };
+      await setDoc(doc(db, 'evaluationPlans', plan.id), planData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'evaluationPlans');
+    }
   };
 
-  const handleSavePlan = (plan: EvaluationPlan) => {
-    setEvaluationPlans([...evaluationPlans, plan]);
-  };
-
-  const handleUpdatePlan = (updatedPlan: EvaluationPlan) => {
-    setEvaluationPlans(evaluationPlans.map(p => p.id === updatedPlan.id ? updatedPlan : p));
+  const handleUpdatePlan = async (updatedPlan: EvaluationPlan) => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'evaluationPlans', updatedPlan.id), updatedPlan);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'evaluationPlans');
+    }
   };
 
   const renderScreen = () => {
@@ -149,8 +199,16 @@ export default function App() {
     }
   };
 
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen bg-surface-dark flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
   }
 
   return (
