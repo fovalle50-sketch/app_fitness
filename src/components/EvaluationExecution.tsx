@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, X, Dumbbell, Timer, Calculator, Trash2, Check, AlertCircle } from 'lucide-react';
 import { Athlete, Exercise, EvaluationPlan, PlannedExercise, Evaluation, ExerciseResult } from '../types';
 import { calculateAge } from '../utils/athleteUtils';
@@ -115,11 +114,7 @@ export const EvaluationExecution: React.FC<EvaluationExecutionProps> = ({ plan, 
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-6xl mx-auto"
-    >
+    <div className="max-w-6xl mx-auto">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
@@ -151,7 +146,7 @@ export const EvaluationExecution: React.FC<EvaluationExecutionProps> = ({ plan, 
                   const isEditing = editingExerciseId === ex.id;
                   
                   return (
-                    <motion.div 
+                    <div 
                       key={ex.id}
                       className={`p-6 rounded-xl border transition-all ${
                         ex.isCompleted 
@@ -192,11 +187,7 @@ export const EvaluationExecution: React.FC<EvaluationExecutionProps> = ({ plan, 
                       </div>
 
                       {isEditing && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="pt-4 border-t border-white/5 space-y-4"
-                        >
+                        <div className="pt-4 border-t border-white/5 space-y-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Repeticiones Reales</label>
@@ -236,7 +227,7 @@ export const EvaluationExecution: React.FC<EvaluationExecutionProps> = ({ plan, 
                               Confirmar
                             </button>
                           </div>
-                        </motion.div>
+                        </div>
                       )}
 
                       {ex.isCompleted && (
@@ -251,7 +242,7 @@ export const EvaluationExecution: React.FC<EvaluationExecutionProps> = ({ plan, 
                           </button>
                         </div>
                       )}
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
@@ -317,6 +308,6 @@ export const EvaluationExecution: React.FC<EvaluationExecutionProps> = ({ plan, 
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

@@ -1,7 +1,6 @@
 import React from 'react';
 import { LayoutGrid, Users, Dumbbell, BarChart3, HelpCircle, LogOut, Plus, Settings2 } from 'lucide-react';
 import { Screen } from '../types';
-import { motion } from 'motion/react';
 
 interface SidebarProps {
   activeScreen: Screen;

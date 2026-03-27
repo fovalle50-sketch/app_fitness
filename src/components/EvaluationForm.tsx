@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { Timer, Plus, Play, CheckCircle2, Calendar, User, ChevronRight, LayoutGrid, ClipboardList } from 'lucide-react';
 import { Athlete, Evaluation, Exercise, EvaluationPlan } from '../types';
 import { EvaluationPlanner } from './EvaluationPlanner';
@@ -74,11 +73,7 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
   }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-6xl mx-auto"
-    >
+    <div className="max-w-6xl mx-auto">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="font-headline text-5xl font-black tracking-tighter uppercase italic leading-none text-white">Evaluaciones</h1>
@@ -110,9 +105,8 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
           </div>
         ) : (
           activePlans.map(plan => (
-            <motion.div 
+            <div 
               key={plan.id}
-              whileHover={{ y: -5 }}
               className="bg-surface-card p-6 rounded-2xl border border-white/5 group relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-1 h-full bg-accent/50"></div>
@@ -152,10 +146,10 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
                 <Play size={16} fill="currentColor" />
                 {plan.status === 'Planificada' ? 'Iniciar' : 'Continuar'}
               </button>
-            </motion.div>
+            </div>
           ))
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };

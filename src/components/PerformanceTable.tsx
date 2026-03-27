@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, Download, ChevronDown, ChevronUp, Activity, Calendar, User, Award, Info } from 'lucide-react';
 import { Evaluation } from '../types';
 
@@ -20,11 +19,7 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto space-y-12"
-    >
+    <div className="max-w-7xl mx-auto space-y-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -124,42 +119,35 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
                         </button>
                       </td>
                     </tr>
-                    <AnimatePresence>
-                      {expandedId === ev.id && (
-                        <tr>
-                          <td colSpan={6} className="px-0 py-0 bg-surface-dark/50">
-                            <motion.div 
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="overflow-hidden"
-                            >
-                              <div className="p-8 space-y-6">
-                                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent">
-                                  <Award size={14} /> Desglose de Rendimiento
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                  {ev.exercises.map((ex) => (
-                                    <div key={ex.id} className="bg-surface-card p-4 rounded-xl border border-white/5 flex justify-between items-center">
-                                      <div>
-                                        <p className="text-[10px] uppercase font-bold text-white/40 tracking-widest">{ex.exerciseName}</p>
-                                        <p className="text-sm font-bold">
-                                          {ex.reps} Reps {ex.load > 0 && `• ${ex.load}kg`}
-                                        </p>
-                                      </div>
-                                      <div className="text-right">
-                                        <p className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Score</p>
-                                        <p className="font-headline font-black text-accent">{ex.score}</p>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
+                    {expandedId === ev.id && (
+                      <tr>
+                        <td colSpan={6} className="px-0 py-0 bg-surface-dark/50">
+                          <div className="overflow-hidden">
+                            <div className="p-8 space-y-6">
+                              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent">
+                                <Award size={14} /> Desglose de Rendimiento
                               </div>
-                            </motion.div>
-                          </td>
-                        </tr>
-                      )}
-                    </AnimatePresence>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {ev.exercises.map((ex) => (
+                                  <div key={ex.id} className="bg-surface-card p-4 rounded-xl border border-white/5 flex justify-between items-center">
+                                    <div>
+                                      <p className="text-[10px] uppercase font-bold text-white/40 tracking-widest">{ex.exerciseName}</p>
+                                      <p className="text-sm font-bold">
+                                        {ex.reps} Reps {ex.load > 0 && `• ${ex.load}kg`}
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Score</p>
+                                      <p className="font-headline font-black text-accent">{ex.score}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                   </React.Fragment>
                 ))
               )}
@@ -178,6 +166,6 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

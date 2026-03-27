@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { UserPlus, Search, Filter } from 'lucide-react';
 import { Athlete } from '../types';
 import { AthleteCard } from './AthleteCard';
@@ -11,11 +10,7 @@ interface AthleteListProps {
 
 export const AthleteList: React.FC<AthleteListProps> = ({ athletes, onAddNew }) => {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto"
-    >
+    <div className="max-w-7xl mx-auto">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className="text-5xl font-black font-headline tracking-tighter mb-2 text-white">Gestión de Alumnos</h2>
@@ -59,6 +54,6 @@ export const AthleteList: React.FC<AthleteListProps> = ({ athletes, onAddNew }) 
           </div>
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };

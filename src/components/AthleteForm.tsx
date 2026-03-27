@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { UserPlus, Camera, X, Check } from 'lucide-react';
 import { Athlete } from '../types';
 
@@ -36,11 +35,7 @@ export const AthleteForm: React.FC<AthleteFormProps> = ({ onAdd, onCancel }) => 
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="max-w-2xl mx-auto bg-surface-card rounded-xl overflow-hidden border border-white/5 shadow-2xl"
-    >
+    <div className="max-w-2xl mx-auto bg-surface-card rounded-xl overflow-hidden border border-white/5 shadow-2xl">
       <div className="bg-surface-container p-6 border-b border-white/5 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-accent/10 text-accent flex items-center justify-center rounded-lg">
@@ -143,6 +138,6 @@ export const AthleteForm: React.FC<AthleteFormProps> = ({ onAdd, onCancel }) => 
           </button>
         </div>
       </form>
-    </motion.div>
+    </div>
   );
 };

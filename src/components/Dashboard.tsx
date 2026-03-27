@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { AthleteCard } from './AthleteCard';
 import { Athlete, WeeklyStats } from '../types';
 
@@ -46,11 +45,7 @@ const WEEKLY_STATS: WeeklyStats = {
 
 export const Dashboard: React.FC = () => {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto"
-    >
+    <div className="max-w-7xl mx-auto">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className="text-5xl font-black font-headline tracking-tighter mb-2 text-white">Roster Activo</h2>
@@ -118,6 +113,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Trash2, CheckCircle2, X, Dumbbell, Timer, Scale } from 'lucide-react';
 import { Athlete, Exercise, EvaluationPlan, PlannedExercise } from '../types';
 
@@ -68,11 +67,7 @@ export const EvaluationPlanner: React.FC<EvaluationPlannerProps> = ({ athletes, 
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="max-w-4xl mx-auto bg-surface-card rounded-xl overflow-hidden border border-white/5 shadow-2xl"
-    >
+    <div className="max-w-4xl mx-auto bg-surface-card rounded-xl overflow-hidden border border-white/5 shadow-2xl">
       <div className="bg-surface-container p-6 border-b border-white/5 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-accent/10 text-accent flex items-center justify-center rounded-lg">
@@ -173,43 +168,38 @@ export const EvaluationPlanner: React.FC<EvaluationPlannerProps> = ({ athletes, 
         <div className="space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Ejercicios Planificados</h3>
           <div className="space-y-2">
-            <AnimatePresence mode="popLayout">
-              {plannedExercises.length === 0 ? (
-                <div className="text-center py-8 border-2 border-dashed border-white/5 rounded-xl text-white/20 text-sm italic">
-                  No hay ejercicios en el plan todavía
-                </div>
-              ) : (
-                plannedExercises.map((ex) => (
-                  <motion.div 
-                    key={ex.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="flex items-center justify-between bg-surface-dark p-4 rounded-lg group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
-                        <Dumbbell size={18} />
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm">{ex.exerciseName}</p>
-                        <p className="text-xs text-white/40">
-                          {ex.targetReps && `${ex.targetReps} Reps`}
-                          {ex.targetTime && ` • ${ex.targetTime}`}
-                          {ex.targetLoad && ` • ${ex.targetLoad}kg`}
-                        </p>
-                      </div>
+            {plannedExercises.length === 0 ? (
+              <div className="text-center py-8 border-2 border-dashed border-white/5 rounded-xl text-white/20 text-sm italic">
+                No hay ejercicios en el plan todavía
+              </div>
+            ) : (
+              plannedExercises.map((ex) => (
+                <div 
+                  key={ex.id}
+                  className="flex items-center justify-between bg-surface-dark p-4 rounded-lg group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+                      <Dumbbell size={18} />
                     </div>
-                    <button 
-                      onClick={() => removeExercise(ex.id)}
-                      className="text-white/20 hover:text-red-400 transition-colors p-2"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
+                    <div>
+                      <p className="font-bold text-sm">{ex.exerciseName}</p>
+                      <p className="text-xs text-white/40">
+                        {ex.targetReps && `${ex.targetReps} Reps`}
+                        {ex.targetTime && ` • ${ex.targetTime}`}
+                        {ex.targetLoad && ` • ${ex.targetLoad}kg`}
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => removeExercise(ex.id)}
+                    className="text-white/20 hover:text-red-400 transition-colors p-2"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -232,6 +222,6 @@ export const EvaluationPlanner: React.FC<EvaluationPlannerProps> = ({ athletes, 
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
