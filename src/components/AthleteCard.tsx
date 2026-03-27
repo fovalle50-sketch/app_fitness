@@ -1,13 +1,15 @@
-import React from 'react';
-import { MoreVertical, Activity, Zap, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { MoreVertical, Activity, Zap, AlertTriangle, Trash2 } from 'lucide-react';
 import { Athlete } from '../types';
 import { calculateAge } from '../utils/athleteUtils';
 
 interface AthleteCardProps {
   athlete: Athlete;
+  onDelete: (id: string) => void;
 }
 
-export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete }) => {
+export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, onDelete }) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const statusColors = {
     'Pro Elite': 'bg-accent/10 text-accent',
     'Alto Rendimiento': 'bg-primary-blue/10 text-primary-blue',
@@ -45,10 +47,38 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete }) => {
             </div>
           </div>
         </div>
-        <button className="text-white/40 hover:text-white transition-colors">
-          <MoreVertical size={20} />
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
+            className="text-white/20 hover:text-red-400 transition-colors"
+          >
+            <Trash2 size={18} />
+          </button>
+          <button className="text-white/40 hover:text-white transition-colors">
+            <MoreVertical size={20} />
+          </button>
+        </div>
       </div>
+
+      {showDeleteConfirm && (
+        <div className="absolute inset-0 bg-surface-dark/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
+          <p className="text-sm font-bold mb-4">¿Eliminar a {athlete.name}?</p>
+          <div className="flex gap-4 w-full">
+            <button 
+              onClick={() => setShowDeleteConfirm(false)}
+              className="flex-1 bg-white/5 py-2 rounded font-bold text-xs uppercase tracking-widest"
+            >
+              Cancelar
+            </button>
+            <button 
+              onClick={() => onDelete(athlete.id)}
+              className="flex-1 bg-red-500 text-white py-2 rounded font-bold text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-y-4 mb-8">
         <div>

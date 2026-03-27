@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { Dashboard } from './components/Dashboard';
@@ -12,8 +12,9 @@ import { PerformanceTable } from './components/PerformanceTable';
 import { AthleteList } from './components/AthleteList';
 import { AthleteForm } from './components/AthleteForm';
 import { ExerciseManagement } from './components/ExerciseManagement';
+import { Login } from './components/Login';
 import { Screen, Athlete, Evaluation, Exercise, EvaluationPlan } from './types';
-import { Plus, LayoutGrid, Users, Dumbbell, BarChart3, Settings2 } from 'lucide-react';
+import { Plus, LayoutGrid, Users, Dumbbell, BarChart3, Settings2, LogIn } from 'lucide-react';
 
 const INITIAL_ATHLETES: Athlete[] = [
   {
@@ -57,6 +58,7 @@ const INITIAL_EXERCISES: Exercise[] = [
 ];
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeScreen, setActiveScreen] = useState<Screen>('dashboard');
   const [athletes, setAthletes] = useState<Athlete[]>(INITIAL_ATHLETES);
   const [exercises, setExercises] = useState<Exercise[]>(INITIAL_EXERCISES);
@@ -64,10 +66,35 @@ export default function App() {
   const [evaluationPlans, setEvaluationPlans] = useState<EvaluationPlan[]>([]);
   const [isAddingAthlete, setIsAddingAthlete] = useState(false);
 
+  useEffect(() => {
+    const authStatus = localStorage.getItem('kinetic_auth');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = (password: string) => {
+    if (password === 'kinetic2026') {
+      setIsAuthenticated(true);
+      localStorage.setItem('kinetic_auth', 'true');
+      return true;
+    }
+    return false;
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('kinetic_auth');
+  };
+
   const handleAddAthlete = (newAthlete: Athlete) => {
     setAthletes([...athletes, newAthlete]);
     setIsAddingAthlete(false);
     setActiveScreen('alumnos');
+  };
+
+  const handleDeleteAthlete = (id: string) => {
+    setAthletes(athletes.filter(a => a.id !== id));
   };
 
   const handleAddExercise = (newExercise: Exercise) => {
@@ -96,7 +123,7 @@ export default function App() {
       if (isAddingAthlete) {
         return <AthleteForm onAdd={handleAddAthlete} onCancel={() => setIsAddingAthlete(false)} />;
       }
-      return <AthleteList athletes={athletes} onAddNew={() => setIsAddingAthlete(true)} />;
+      return <AthleteList athletes={athletes} onAddNew={() => setIsAddingAthlete(true)} onDelete={handleDeleteAthlete} />;
     }
 
     switch (activeScreen) {
@@ -121,6 +148,10 @@ export default function App() {
         return <Dashboard />;
     }
   };
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   return (
     <div className="min-h-screen bg-surface-dark text-white font-sans selection:bg-accent/30 selection:text-accent">
@@ -182,6 +213,15 @@ export default function App() {
           Reportes
         </button>
       </nav>
+
+      {/* Logout button for desktop (optional but good) */}
+      <button 
+        onClick={handleLogout}
+        className="hidden lg:flex fixed bottom-12 left-6 bg-white/5 hover:bg-red-500/10 text-white/20 hover:text-red-400 p-3 rounded-xl transition-all z-50 border border-white/5"
+        title="Cerrar Sesión"
+      >
+        <LogIn size={20} className="rotate-180" />
+      </button>
 
       {/* Floating Action Button */}
       <button 

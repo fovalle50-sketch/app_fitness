@@ -15,6 +15,7 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
   const [newDescription, setNewDescription] = useState('');
   const [newCategory, setNewCategory] = useState<Exercise['category']>('Empuje');
   const [newRequiresLoad, setNewRequiresLoad] = useState(false);
+  const [exerciseToDelete, setExerciseToDelete] = useState<string | null>(null);
 
   const filteredExercises = exercises.filter(ex => 
     ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,6 +40,11 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
     setNewCategory('Empuje');
     setNewRequiresLoad(false);
     setIsAdding(false);
+  };
+
+  const confirmDelete = (id: string) => {
+    onDelete(id);
+    setExerciseToDelete(null);
   };
 
   return (
@@ -78,7 +84,7 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
           >
             <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
               <button 
-                onClick={() => onDelete(ex.id)}
+                onClick={() => setExerciseToDelete(ex.id)}
                 className="text-white/20 hover:text-red-400 p-2 transition-colors"
               >
                 <Trash2 size={18} />
@@ -104,6 +110,26 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
                 {ex.description || 'Sin descripción técnica disponible.'}
               </p>
             </div>
+
+            {exerciseToDelete === ex.id && (
+              <div className="absolute inset-0 bg-surface-dark/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4 text-center">
+                <p className="text-xs font-bold mb-3 uppercase tracking-widest">¿Eliminar ejercicio?</p>
+                <div className="flex gap-2 w-full">
+                  <button 
+                    onClick={() => setExerciseToDelete(null)}
+                    className="flex-1 bg-white/5 py-2 rounded font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    No
+                  </button>
+                  <button 
+                    onClick={() => confirmDelete(ex.id)}
+                    className="flex-1 bg-red-500 text-white py-2 rounded font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    Sí
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
