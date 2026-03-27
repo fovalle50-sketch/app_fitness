@@ -3,7 +3,7 @@ export type Screen = 'dashboard' | 'alumnos' | 'ejercicios' | 'evaluaciones' | '
 export interface Athlete {
   id: string;
   name: string;
-  age: number;
+  birthDate: string; // ISO format YYYY-MM-DD
   gender: 'Masculino' | 'Femenino';
   weight: number;
   activityLevel: number;
@@ -17,6 +17,28 @@ export interface Exercise {
   description: string;
   category: 'Tracción' | 'Empuje' | 'Pierna' | 'Core' | 'Cardio';
   requiresLoad: boolean;
+}
+
+export interface PlannedExercise {
+  id: string;
+  exerciseId: string;
+  exerciseName: string;
+  targetReps?: number;
+  targetTime?: string;
+  targetLoad?: number;
+  actualReps?: number;
+  actualLoad?: number;
+  score?: number;
+  isCompleted: boolean;
+}
+
+export interface EvaluationPlan {
+  id: string;
+  athleteId: string;
+  athleteName: string;
+  date: string;
+  exercises: PlannedExercise[];
+  status: 'Planificada' | 'En Progreso' | 'Completada';
 }
 
 export interface ExerciseResult {

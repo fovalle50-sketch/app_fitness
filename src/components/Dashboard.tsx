@@ -7,7 +7,7 @@ const MOCK_ATHLETES: Athlete[] = [
   {
     id: '1',
     name: 'Marco Rossi',
-    age: 26,
+    birthDate: '1999-05-15',
     gender: 'Masculino',
     weight: 78.4,
     activityLevel: 92,
@@ -17,7 +17,7 @@ const MOCK_ATHLETES: Athlete[] = [
   {
     id: '2',
     name: 'Elena Vargas',
-    age: 24,
+    birthDate: '2001-11-20',
     gender: 'Femenino',
     weight: 62.1,
     activityLevel: 78,
@@ -27,7 +27,7 @@ const MOCK_ATHLETES: Athlete[] = [
   {
     id: '3',
     name: 'Javier Mendez',
-    age: 31,
+    birthDate: '1994-03-10',
     gender: 'Masculino',
     weight: 89.2,
     activityLevel: 34,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { MoreVertical, Activity, Zap, AlertTriangle } from 'lucide-react';
 import { Athlete } from '../types';
+import { calculateAge } from '../utils/athleteUtils';
 
 interface AthleteCardProps {
   athlete: Athlete;
@@ -18,6 +19,8 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete }) => {
     'Alto Rendimiento': 'bg-primary-blue',
     'Fatiga Detectada': 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.5)]',
   };
+
+  const age = calculateAge(athlete.birthDate);
 
   return (
     <div className="group bg-surface-card p-6 rounded-none relative overflow-hidden transition-all hover:bg-surface-container border-l-4 border-transparent hover:border-accent/50">
@@ -50,7 +53,7 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete }) => {
       <div className="grid grid-cols-2 gap-y-4 mb-8">
         <div>
           <div className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-1">Edad / Sexo</div>
-          <div className="text-white font-medium">{athlete.age} / {athlete.gender}</div>
+          <div className="text-white font-medium">{age} / {athlete.gender}</div>
         </div>
         <div>
           <div className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-1">Peso</div>

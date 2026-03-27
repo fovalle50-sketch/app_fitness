@@ -11,7 +11,7 @@ interface AthleteFormProps {
 export const AthleteForm: React.FC<AthleteFormProps> = ({ onAdd, onCancel }) => {
   const [formData, setFormData] = useState({
     name: '',
-    age: '',
+    birthDate: '',
     gender: 'Masculino' as const,
     weight: '',
     status: 'Alto Rendimiento' as const,
@@ -19,12 +19,12 @@ export const AthleteForm: React.FC<AthleteFormProps> = ({ onAdd, onCancel }) => 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.age || !formData.weight) return;
+    if (!formData.name || !formData.birthDate || !formData.weight) return;
 
     const newAthlete: Athlete = {
       id: Math.random().toString(36).substr(2, 9),
       name: formData.name,
-      age: parseInt(formData.age),
+      birthDate: formData.birthDate,
       gender: formData.gender,
       weight: parseFloat(formData.weight),
       activityLevel: 0,
@@ -77,14 +77,13 @@ export const AthleteForm: React.FC<AthleteFormProps> = ({ onAdd, onCancel }) => 
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Edad</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Fecha de Nacimiento</label>
             <input 
-              type="number" 
+              type="date" 
               required
-              value={formData.age}
-              onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+              value={formData.birthDate}
+              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
               className="w-full bg-surface-dark border-none text-white p-4 rounded-lg focus:ring-2 focus:ring-accent/50 transition-all font-semibold"
-              placeholder="25"
             />
           </div>
 

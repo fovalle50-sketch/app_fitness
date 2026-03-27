@@ -12,14 +12,14 @@ import { PerformanceTable } from './components/PerformanceTable';
 import { AthleteList } from './components/AthleteList';
 import { AthleteForm } from './components/AthleteForm';
 import { ExerciseManagement } from './components/ExerciseManagement';
-import { Screen, Athlete, Evaluation, Exercise } from './types';
+import { Screen, Athlete, Evaluation, Exercise, EvaluationPlan } from './types';
 import { Plus, LayoutGrid, Users, Dumbbell, BarChart3, Settings2 } from 'lucide-react';
 
 const INITIAL_ATHLETES: Athlete[] = [
   {
     id: '1',
     name: 'Marco Rossi',
-    age: 26,
+    birthDate: '1999-05-15',
     gender: 'Masculino',
     weight: 78.4,
     activityLevel: 92,
@@ -29,7 +29,7 @@ const INITIAL_ATHLETES: Athlete[] = [
   {
     id: '2',
     name: 'Elena Vargas',
-    age: 24,
+    birthDate: '2001-11-20',
     gender: 'Femenino',
     weight: 62.1,
     activityLevel: 78,
@@ -39,7 +39,7 @@ const INITIAL_ATHLETES: Athlete[] = [
   {
     id: '3',
     name: 'Javier Mendez',
-    age: 31,
+    birthDate: '1994-03-10',
     gender: 'Masculino',
     weight: 89.2,
     activityLevel: 34,
@@ -61,6 +61,7 @@ export default function App() {
   const [athletes, setAthletes] = useState<Athlete[]>(INITIAL_ATHLETES);
   const [exercises, setExercises] = useState<Exercise[]>(INITIAL_EXERCISES);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [evaluationPlans, setEvaluationPlans] = useState<EvaluationPlan[]>([]);
   const [isAddingAthlete, setIsAddingAthlete] = useState(false);
 
   const handleAddAthlete = (newAthlete: Athlete) => {
@@ -82,6 +83,14 @@ export default function App() {
     setActiveScreen('reportes');
   };
 
+  const handleSavePlan = (plan: EvaluationPlan) => {
+    setEvaluationPlans([...evaluationPlans, plan]);
+  };
+
+  const handleUpdatePlan = (updatedPlan: EvaluationPlan) => {
+    setEvaluationPlans(evaluationPlans.map(p => p.id === updatedPlan.id ? updatedPlan : p));
+  };
+
   const renderScreen = () => {
     if (activeScreen === 'alumnos') {
       if (isAddingAthlete) {
@@ -96,7 +105,16 @@ export default function App() {
       case 'ejercicios':
         return <ExerciseManagement exercises={exercises} onAdd={handleAddExercise} onDelete={handleDeleteExercise} />;
       case 'evaluaciones':
-        return <EvaluationForm athletes={athletes} exercises={exercises} onSave={handleSaveEvaluation} />;
+        return (
+          <EvaluationForm 
+            athletes={athletes} 
+            exercises={exercises} 
+            plans={evaluationPlans}
+            onSavePlan={handleSavePlan}
+            onUpdatePlan={handleUpdatePlan}
+            onSaveEvaluation={handleSaveEvaluation} 
+          />
+        );
       case 'reportes':
         return <PerformanceTable evaluations={evaluations} />;
       default:
