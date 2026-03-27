@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User, signInAnonymously } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, getDocs, getDocFromServer, addDoc } from 'firebase/firestore';
 
 // Import the Firebase configuration
@@ -78,6 +78,7 @@ export {
   signInWithPopup, 
   signOut, 
   onAuthStateChanged,
+  signInAnonymously,
   GoogleAuthProvider as googleProviderClass // Just in case, but I exported googleProvider instance
 };
 export const googleProvider = new GoogleAuthProvider();

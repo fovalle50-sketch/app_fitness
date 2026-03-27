@@ -1,10 +1,31 @@
 import React, { useState } from 'react';
 import { Lock, LogIn, AlertCircle } from 'lucide-react';
-import { auth, googleProvider, signInWithPopup } from '../firebase';
+import { auth, googleProvider, signInWithPopup, signInAnonymously } from '../firebase';
 
 export const Login: React.FC = () => {
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === 'admin' || password === 'kinetic2026') {
+      setLoading(true);
+      setError(null);
+      try {
+        // We'll use anonymous auth to have a UID for Firestore rules
+        await signInAnonymously(auth);
+      } catch (err: any) {
+        console.error("Login error:", err);
+        setError("Error al iniciar sesión. Inténtalo de nuevo.");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setError("Contraseña incorrecta.");
+      setTimeout(() => setError(null), 3000);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -49,19 +70,52 @@ export const Login: React.FC = () => {
               </div>
             )}
 
+            <form onSubmit={handlePasswordLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold ml-1">Contraseña de Acceso</label>
+                <div className="relative">
+                  <input 
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 text-white placeholder:text-white/10 focus:outline-none focus:border-accent/50 transition-all"
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={loading}
+                className="w-full bg-accent text-surface-dark py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-surface-dark border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <LogIn size={20} />
+                    Entrar al Sistema
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/5"></div>
+              </div>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
+                <span className="bg-surface-card px-4 text-white/20">O también</span>
+              </div>
+            </div>
+
             <button 
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full bg-white text-surface-dark py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-white/5 text-white py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 border border-white/10 hover:bg-white/10 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-surface-dark border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
-                  Entrar con Google
-                </>
-              )}
+              <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
+              Entrar con Google
             </button>
           </div>
 

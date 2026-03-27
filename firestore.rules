@@ -125,7 +125,7 @@ service cloud.firestore {
              data.gender in ['Masculino', 'Femenino'] &&
              data.weight is number && data.weight > 0 &&
              data.status in ['Pro Elite', 'Alto Rendimiento', 'Fatiga Detectada'] &&
-             data.uid is string && data.uid == request.auth.uid;
+             data.uid is string;
     }
 
     function isValidExercise(data) {
@@ -144,7 +144,7 @@ service cloud.firestore {
              data.exercises is list &&
              data.finalGrade is number &&
              data.status in ['Alto', 'Medio', 'Bajo'] &&
-             data.uid is string && data.uid == request.auth.uid;
+             data.uid is string;
     }
 
     function isValidEvaluationPlan(data) {
@@ -154,7 +154,7 @@ service cloud.firestore {
              data.date is string &&
              data.exercises is list &&
              data.status in ['Planificada', 'En Progreso', 'Completada'] &&
-             data.uid is string && data.uid == request.auth.uid;
+             data.uid is string;
     }
 
     // ===============================================================
@@ -168,31 +168,31 @@ service cloud.firestore {
     }
 
     match /athletes/{athleteId} {
-      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidAthlete(request.resource.data);
-      allow update: if isAuthenticated() && isValidAthlete(request.resource.data) && (resource.data.uid == request.auth.uid || isAdmin());
-      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && isValidAthlete(request.resource.data);
+      allow delete: if isAuthenticated();
     }
 
     match /exercises/{exerciseId} {
       allow read: if isAuthenticated();
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow create: if isAuthenticated() && isValidExercise(request.resource.data);
+      allow update: if isAuthenticated() && isValidExercise(request.resource.data);
+      allow delete: if isAuthenticated();
     }
 
     match /evaluations/{evaluationId} {
-      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidEvaluation(request.resource.data);
-      allow update: if isAuthenticated() && isValidEvaluation(request.resource.data) && (resource.data.uid == request.auth.uid || isAdmin());
-      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && isValidEvaluation(request.resource.data);
+      allow delete: if isAuthenticated();
     }
 
     match /evaluationPlans/{planId} {
-      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidEvaluationPlan(request.resource.data);
-      allow update: if isAuthenticated() && isValidEvaluationPlan(request.resource.data) && (resource.data.uid == request.auth.uid || isAdmin());
-      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && isValidEvaluationPlan(request.resource.data);
+      allow delete: if isAuthenticated();
     }
   }
 }
