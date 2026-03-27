@@ -10,6 +10,7 @@ export const TopBar: React.FC<TopBarProps> = ({ activeScreen }) => {
   const screenLabels: Record<Screen, string> = {
     dashboard: 'Dashboard',
     alumnos: 'Gestión de Alumnos',
+    ejercicios: 'Gestión de Ejercicios',
     evaluaciones: 'Evaluaciones',
     reportes: 'Reportes Analíticos',
   };

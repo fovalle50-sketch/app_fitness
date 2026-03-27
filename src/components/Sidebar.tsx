@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Users, Dumbbell, BarChart3, HelpCircle, LogOut, Plus } from 'lucide-react';
+import { LayoutGrid, Users, Dumbbell, BarChart3, HelpCircle, LogOut, Plus, Settings2 } from 'lucide-react';
 import { Screen } from '../types';
 import { motion } from 'motion/react';
 
@@ -12,6 +12,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onScreenChange }
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
     { id: 'alumnos', label: 'Alumnos', icon: Users },
+    { id: 'ejercicios', label: 'Ejercicios', icon: Settings2 },
     { id: 'evaluaciones', label: 'Evaluaciones', icon: Dumbbell },
     { id: 'reportes', label: 'Reportes', icon: BarChart3 },
   ] as const;

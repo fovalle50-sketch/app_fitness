@@ -143,7 +143,9 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
                                     <div key={ex.id} className="bg-surface-card p-4 rounded-xl border border-white/5 flex justify-between items-center">
                                       <div>
                                         <p className="text-[10px] uppercase font-bold text-white/40 tracking-widest">{ex.exerciseName}</p>
-                                        <p className="text-sm font-bold">{ex.reps} Reps</p>
+                                        <p className="text-sm font-bold">
+                                          {ex.reps} Reps {ex.load > 0 && `• ${ex.load}kg`}
+                                        </p>
                                       </div>
                                       <div className="text-right">
                                         <p className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Score</p>

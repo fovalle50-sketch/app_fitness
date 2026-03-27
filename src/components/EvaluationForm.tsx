@@ -1,17 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Timer, Dumbbell, Lock, AlertCircle, Calculator, Plus, Trash2, CheckCircle2, ChevronRight } from 'lucide-react';
-import { Athlete, ExerciseResult, Evaluation } from '../types';
+import { Timer, Dumbbell, Lock, AlertCircle, Calculator, Plus, Trash2, CheckCircle2, ChevronRight, Settings2 } from 'lucide-react';
+import { Athlete, ExerciseResult, Evaluation, Exercise } from '../types';
 
 interface EvaluationFormProps {
   athletes: Athlete[];
+  exercises: Exercise[];
   onSave: (evaluation: Evaluation) => void;
 }
 
-export const EvaluationForm: React.FC<EvaluationFormProps> = ({ athletes, onSave }) => {
+export const EvaluationForm: React.FC<EvaluationFormProps> = ({ athletes, exercises, onSave }) => {
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>('');
-  const [currentExercise, setCurrentExercise] = useState<string>('');
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
   const [currentReps, setCurrentReps] = useState<string>('');
+  const [currentLoad, setCurrentLoad] = useState<string>('');
   const [exerciseResults, setExerciseResults] = useState<ExerciseResult[]>([]);
 
   const selectedAthlete = useMemo(() => 
@@ -19,28 +21,51 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({ athletes, onSave
     [athletes, selectedAthleteId]
   );
 
-  const calculateScore = (reps: number, weight: number) => {
-    // Simplified formula: (Reps * 10) / (Weight / 10)
-    const score = (reps * 10) / (weight / 10);
-    return Math.min(10, Math.max(0, parseFloat(score.toFixed(1))));
+  const selectedExercise = useMemo(() => 
+    exercises.find(e => e.id === selectedExerciseId),
+    [exercises, selectedExerciseId]
+  );
+
+  const calculateScore = (reps: number, load: number, athlete: Athlete, exercise: Exercise) => {
+    // Formula: (Carga * Edad * Sexo) / Peso corporal
+    // Carga = Reps * (requiresLoad ? load : 1)
+    // Sexo Factor: Masculino = 1.0, Femenino = 1.2
+    
+    const cargaValue = exercise.requiresLoad ? load : 1;
+    const totalCarga = reps * cargaValue;
+    const sexoFactor = athlete.gender === 'Masculino' ? 1.0 : 1.2;
+    
+    // Raw formula from user
+    const rawScore = (totalCarga * athlete.age * sexoFactor) / athlete.weight;
+    
+    // Normalization to 0-10 scale
+    // We assume a "very good" raw score is around 50 for bodyweight or 200 for weighted
+    // Let's use a dynamic normalization to keep it useful
+    const normalizationFactor = exercise.requiresLoad ? 40 : 10;
+    const normalizedScore = rawScore / normalizationFactor;
+    
+    return Math.min(10, Math.max(0, parseFloat(normalizedScore.toFixed(1))));
   };
 
   const handleAddExercise = () => {
-    if (!currentExercise || !currentReps || !selectedAthlete) return;
+    if (!selectedExercise || !currentReps || !selectedAthlete) return;
 
     const reps = parseInt(currentReps);
-    const score = calculateScore(reps, selectedAthlete.weight);
+    const load = selectedExercise.requiresLoad ? parseFloat(currentLoad || '0') : 0;
+    const score = calculateScore(reps, load, selectedAthlete, selectedExercise);
 
     const newResult: ExerciseResult = {
       id: Math.random().toString(36).substr(2, 9),
-      exerciseName: currentExercise,
+      exerciseName: selectedExercise.name,
       reps,
+      load,
       score,
     };
 
     setExerciseResults([...exerciseResults, newResult]);
-    setCurrentExercise('');
+    setSelectedExerciseId('');
     setCurrentReps('');
+    setCurrentLoad('');
   };
 
   const removeExercise = (id: string) => {
@@ -136,37 +161,64 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({ athletes, onSave
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Ejercicio</label>
                     <select 
-                      value={currentExercise}
-                      onChange={(e) => setCurrentExercise(e.target.value)}
+                      value={selectedExerciseId}
+                      onChange={(e) => {
+                        setSelectedExerciseId(e.target.value);
+                        setCurrentLoad('');
+                      }}
                       className="w-full bg-surface-dark border-none text-white p-3 rounded-lg appearance-none focus:ring-2 focus:ring-accent/50 transition-all text-sm"
                     >
                       <option value="">Seleccionar...</option>
-                      <option value="Dominadas">Dominadas</option>
-                      <option value="Flexiones">Flexiones</option>
-                      <option value="Sentadillas">Sentadillas</option>
-                      <option value="Burpees">Burpees</option>
-                      <option value="Peso Muerto">Peso Muerto</option>
+                      {exercises.map(ex => (
+                        <option key={ex.id} value={ex.id}>{ex.name}</option>
+                      ))}
                     </select>
+                    {exercises.length === 0 && (
+                      <p className="text-[10px] text-red-400 mt-1 italic">No hay ejercicios configurados. Ve a "Ejercicios" para añadir nuevos.</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Repeticiones</label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="number" 
-                        value={currentReps}
-                        onChange={(e) => setCurrentReps(e.target.value)}
-                        placeholder="0"
-                        className="flex-1 bg-surface-dark border-none text-white p-3 rounded-lg focus:ring-2 focus:ring-accent/50 transition-all text-sm"
-                      />
-                      <button 
-                        type="button"
-                        onClick={handleAddExercise}
-                        disabled={!currentExercise || !currentReps}
-                        className="bg-accent text-surface-dark px-4 rounded-lg font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Añadir
-                      </button>
-                    </div>
+                    <input 
+                      type="number" 
+                      value={currentReps}
+                      onChange={(e) => setCurrentReps(e.target.value)}
+                      placeholder="0"
+                      className="w-full bg-surface-dark border-none text-white p-3 rounded-lg focus:ring-2 focus:ring-accent/50 transition-all text-sm"
+                    />
+                  </div>
+                  
+                  {selectedExercise?.requiresLoad && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="space-y-2 md:col-span-2"
+                    >
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Carga Externa (kg)</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="number" 
+                          value={currentLoad}
+                          onChange={(e) => setCurrentLoad(e.target.value)}
+                          placeholder="Peso en kg..."
+                          className="flex-1 bg-surface-dark border-none text-white p-3 rounded-lg focus:ring-2 focus:ring-accent/50 transition-all text-sm"
+                        />
+                        <div className="flex items-center px-3 bg-white/5 rounded-lg text-[10px] text-white/40 font-bold uppercase">
+                          Relativo: {selectedAthlete && currentLoad ? (parseFloat(currentLoad) / selectedAthlete.weight).toFixed(2) : '0.00'}x
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  <div className="md:col-span-2 pt-2">
+                    <button 
+                      type="button"
+                      onClick={handleAddExercise}
+                      disabled={!selectedExercise || !currentReps || (selectedExercise.requiresLoad && !currentLoad)}
+                      className="w-full bg-accent text-surface-dark py-3 rounded-lg font-bold hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      <Plus size={16} /> Añadir a la Sesión
+                    </button>
                   </div>
                 </div>
               </div>
@@ -195,7 +247,9 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({ athletes, onSave
                             </div>
                             <div>
                               <p className="font-bold text-sm">{ex.exerciseName}</p>
-                              <p className="text-xs text-white/40">{ex.reps} Repeticiones</p>
+                              <p className="text-xs text-white/40">
+                                {ex.reps} Reps {ex.load > 0 && `• ${ex.load}kg`}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-6">
@@ -257,7 +311,8 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({ athletes, onSave
                 </div>
                 <div className="h-[1px] bg-white/5"></div>
                 <p className="text-[10px] text-white/30 italic leading-relaxed">
-                  La nota final se calcula promediando los scores individuales de cada ejercicio, ponderados por el factor cinético del atleta.
+                  Cálculo: (Carga × Edad × Sexo) / Peso Corporal. 
+                  {selectedAthlete?.gender === 'Femenino' ? ' Factor Sexo: 1.2 (Femenino).' : ' Factor Sexo: 1.0 (Masculino).'}
                 </p>
               </div>
 

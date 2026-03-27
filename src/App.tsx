@@ -11,8 +11,9 @@ import { EvaluationForm } from './components/EvaluationForm';
 import { PerformanceTable } from './components/PerformanceTable';
 import { AthleteList } from './components/AthleteList';
 import { AthleteForm } from './components/AthleteForm';
-import { Screen, Athlete, Evaluation } from './types';
-import { Plus, LayoutGrid, Users, Dumbbell, BarChart3 } from 'lucide-react';
+import { ExerciseManagement } from './components/ExerciseManagement';
+import { Screen, Athlete, Evaluation, Exercise } from './types';
+import { Plus, LayoutGrid, Users, Dumbbell, BarChart3, Settings2 } from 'lucide-react';
 
 const INITIAL_ATHLETES: Athlete[] = [
   {
@@ -47,9 +48,18 @@ const INITIAL_ATHLETES: Athlete[] = [
   },
 ];
 
+const INITIAL_EXERCISES: Exercise[] = [
+  { id: '1', name: 'Dominadas', description: 'Tracción vertical de tren superior.', category: 'Tracción', requiresLoad: false },
+  { id: '2', name: 'Flexiones', description: 'Empuje horizontal de tren superior.', category: 'Empuje', requiresLoad: false },
+  { id: '3', name: 'Sentadillas', description: 'Empuje vertical de tren inferior.', category: 'Pierna', requiresLoad: false },
+  { id: '4', name: 'Burpees', description: 'Ejercicio metabólico de cuerpo completo.', category: 'Cardio', requiresLoad: false },
+  { id: '5', name: 'Peso Muerto', description: 'Tracción vertical de tren inferior.', category: 'Pierna', requiresLoad: true },
+];
+
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('dashboard');
   const [athletes, setAthletes] = useState<Athlete[]>(INITIAL_ATHLETES);
+  const [exercises, setExercises] = useState<Exercise[]>(INITIAL_EXERCISES);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [isAddingAthlete, setIsAddingAthlete] = useState(false);
 
@@ -57,6 +67,14 @@ export default function App() {
     setAthletes([...athletes, newAthlete]);
     setIsAddingAthlete(false);
     setActiveScreen('alumnos');
+  };
+
+  const handleAddExercise = (newExercise: Exercise) => {
+    setExercises([...exercises, newExercise]);
+  };
+
+  const handleDeleteExercise = (id: string) => {
+    setExercises(exercises.filter(ex => ex.id !== id));
   };
 
   const handleSaveEvaluation = (evaluation: Evaluation) => {
@@ -75,8 +93,10 @@ export default function App() {
     switch (activeScreen) {
       case 'dashboard':
         return <Dashboard />;
+      case 'ejercicios':
+        return <ExerciseManagement exercises={exercises} onAdd={handleAddExercise} onDelete={handleDeleteExercise} />;
       case 'evaluaciones':
-        return <EvaluationForm athletes={athletes} onSave={handleSaveEvaluation} />;
+        return <EvaluationForm athletes={athletes} exercises={exercises} onSave={handleSaveEvaluation} />;
       case 'reportes':
         return <PerformanceTable evaluations={evaluations} />;
       default:
@@ -115,6 +135,15 @@ export default function App() {
         >
           <Users size={20} className="mb-1" />
           Alumnos
+        </button>
+        <button 
+          onClick={() => { setActiveScreen('ejercicios'); setIsAddingAthlete(false); }}
+          className={`flex flex-col items-center justify-center p-2 font-sans font-semibold text-[10px] uppercase transition-all ${
+            activeScreen === 'ejercicios' ? 'text-accent' : 'text-white/40'
+          }`}
+        >
+          <Settings2 size={20} className="mb-1" />
+          Ejercicios
         </button>
         <button 
           onClick={() => { setActiveScreen('evaluaciones'); setIsAddingAthlete(false); }}

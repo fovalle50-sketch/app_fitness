@@ -1,4 +1,4 @@
-export type Screen = 'dashboard' | 'alumnos' | 'evaluaciones' | 'reportes';
+export type Screen = 'dashboard' | 'alumnos' | 'ejercicios' | 'evaluaciones' | 'reportes';
 
 export interface Athlete {
   id: string;
@@ -11,10 +11,19 @@ export interface Athlete {
   imageUrl: string;
 }
 
+export interface Exercise {
+  id: string;
+  name: string;
+  description: string;
+  category: 'Tracción' | 'Empuje' | 'Pierna' | 'Core' | 'Cardio';
+  requiresLoad: boolean;
+}
+
 export interface ExerciseResult {
   id: string;
   exerciseName: string;
   reps: number;
+  load: number; // 0 if not applicable
   score: number;
 }
 
