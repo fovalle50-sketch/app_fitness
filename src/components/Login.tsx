@@ -1,23 +1,59 @@
 import React, { useState } from 'react';
 import { Lock, LogIn, AlertCircle } from 'lucide-react';
-import { auth, googleProvider, signInWithPopup, signInAnonymously } from '../firebase';
+import { auth, googleProvider, signInWithPopup, signInAnonymously, db, getDocFromServer, doc } from '../firebase';
 
 export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        await getDocFromServer(doc(db, 'test', 'connection'));
+        setConnectionStatus('online');
+      } catch (err: any) {
+        if (err.message?.includes('offline') || err.code === 'unavailable') {
+          setConnectionStatus('offline');
+        } else {
+          // If it's a permission error, it means we ARE connected but just can't read this doc
+          setConnectionStatus('online');
+        }
+      }
+    };
+    checkConnection();
+  }, []);
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password === 'admin' || password === 'kinetic2026') {
       setLoading(true);
       setError(null);
+      
+      const timeoutId = setTimeout(() => {
+        if (loading) {
+          setLoading(false);
+          setError("La conexión con Firebase está tardando demasiado. Verifica tu conexión.");
+        }
+      }, 15000);
+
       try {
         // We'll use anonymous auth to have a UID for Firestore rules
         await signInAnonymously(auth);
+        clearTimeout(timeoutId);
       } catch (err: any) {
+        clearTimeout(timeoutId);
         console.error("Login error:", err);
-        setError("Error al iniciar sesión. Inténtalo de nuevo.");
+        let msg = "Error al iniciar sesión. ";
+        if (err.code === 'auth/operation-not-allowed') {
+          msg += "El inicio de sesión anónimo no está habilitado en la consola de Firebase.";
+        } else if (err.code === 'auth/network-request-failed') {
+          msg += "Error de red. Verifica tu conexión a internet.";
+        } else {
+          msg += `[${err.code || 'unknown'}] ${err.message || "Inténtalo de nuevo."}`;
+        }
+        setError(msg);
       } finally {
         setLoading(false);
       }
@@ -30,12 +66,32 @@ export const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
+    
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        setError("La conexión con Google está tardando demasiado. Verifica tu conexión.");
+      }
+    }, 20000);
+
     try {
       await signInWithPopup(auth, googleProvider);
+      clearTimeout(timeoutId);
     } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error("Login error:", err);
-      setError("Error al iniciar sesión con Google. Inténtalo de nuevo.");
-      setTimeout(() => setError(null), 5000);
+      let msg = "Error al iniciar sesión con Google. ";
+      if (err.code === 'auth/unauthorized-domain') {
+        msg += "Este dominio no está autorizado en la consola de Firebase.";
+      } else if (err.code === 'auth/popup-blocked') {
+        msg += "El navegador bloqueó la ventana emergente.";
+      } else if (err.code === 'auth/network-request-failed') {
+        msg += "Error de red. Verifica tu conexión a internet.";
+      } else {
+        msg += `[${err.code || 'unknown'}] ${err.message || "Inténtalo de nuevo."}`;
+      }
+      setError(msg);
+      setTimeout(() => setError(null), 10000);
     } finally {
       setLoading(false);
     }
@@ -58,6 +114,23 @@ export const Login: React.FC = () => {
           <div className="absolute top-0 left-0 w-full h-1 bg-accent"></div>
           
           <div className="space-y-6">
+            <div className="flex justify-center mb-2">
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border ${
+                connectionStatus === 'online' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                connectionStatus === 'offline' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                'bg-white/5 text-white/40 border-white/10'
+              }`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${
+                  connectionStatus === 'online' ? 'bg-green-400 animate-pulse' :
+                  connectionStatus === 'offline' ? 'bg-red-400' :
+                  'bg-white/20'
+                }`}></div>
+                {connectionStatus === 'online' ? 'Servidor Conectado' :
+                 connectionStatus === 'offline' ? 'Sin Conexión' :
+                 'Verificando Conexión...'}
+              </div>
+            </div>
+
             <div className="text-center space-y-2">
               <h2 className="text-xl font-bold text-white">Bienvenido</h2>
               <p className="text-sm text-white/40">Inicia sesión para gestionar tus atletas y evaluaciones.</p>
