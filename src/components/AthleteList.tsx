@@ -1,15 +1,16 @@
 import React from 'react';
 import { UserPlus, Search, Filter } from 'lucide-react';
-import { Athlete } from '../types';
+import { Athlete, Evaluation } from '../types';
 import { AthleteCard } from './AthleteCard';
 
 interface AthleteListProps {
   athletes: Athlete[];
+  evaluations: Evaluation[];
   onAddNew: () => void;
   onDelete: (id: string) => void;
 }
 
-export const AthleteList: React.FC<AthleteListProps> = ({ athletes, onAddNew, onDelete }) => {
+export const AthleteList: React.FC<AthleteListProps> = ({ athletes, evaluations, onAddNew, onDelete }) => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -38,7 +39,7 @@ export const AthleteList: React.FC<AthleteListProps> = ({ athletes, onAddNew, on
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {athletes.map(athlete => (
-          <AthleteCard key={athlete.id} athlete={athlete} onDelete={onDelete} />
+          <AthleteCard key={athlete.id} athlete={athlete} evaluations={evaluations} onDelete={onDelete} />
         ))}
         
         {/* Empty State / Add New Placeholder */}

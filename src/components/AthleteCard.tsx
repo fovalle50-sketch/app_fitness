@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
-import { MoreVertical, Activity, Zap, AlertTriangle, Trash2 } from 'lucide-react';
-import { Athlete } from '../types';
+import { MoreVertical, Activity, Zap, AlertTriangle, Trash2, BrainCircuit, X, Loader2 } from 'lucide-react';
+import { Athlete, Evaluation } from '../types';
 import { calculateAge } from '../utils/athleteUtils';
+import { analyzeAthletePerformance } from '../services/aiService';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface AthleteCardProps {
   athlete: Athlete;
+  evaluations: Evaluation[];
   onDelete: (id: string) => void;
 }
 
-export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, onDelete }) => {
+export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, evaluations, onDelete }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const statusColors = {
     'Pro Elite': 'bg-accent/10 text-accent',
     'Alto Rendimiento': 'bg-primary-blue/10 text-primary-blue',
@@ -23,6 +31,21 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, onDelete }) =
   };
 
   const age = calculateAge(athlete.birthDate);
+
+  const handleAnalyze = async () => {
+    setIsAnalyzing(true);
+    setError(null);
+    try {
+      const result = await analyzeAthletePerformance(athlete, evaluations);
+      setAnalysisResult(result || "No se pudo generar el análisis.");
+      setShowAnalysisModal(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+      console.error(err);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   return (
     <div className="group bg-surface-card p-6 rounded-none relative overflow-hidden transition-all hover:bg-surface-container border-l-4 border-transparent hover:border-accent/50">
@@ -106,6 +129,26 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, onDelete }) =
       </div>
 
       <div className="flex items-center justify-between border-t border-white/5 pt-4">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
+              isAnalyzing ? 'text-white/20' : 'text-accent hover:text-white'
+            }`}
+          >
+            {isAnalyzing ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <BrainCircuit size={14} />
+            )}
+            Análisis IA
+          </button>
+          <div className="h-4 w-[1px] bg-white/10"></div>
+          <button className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-blue hover:text-accent transition-colors">
+            Telemetría
+          </button>
+        </div>
         <div className="flex -space-x-2">
           <div className="w-8 h-8 rounded-full bg-surface-container border border-surface-dark flex items-center justify-center">
             <Activity size={12} className="text-white/60" />
@@ -119,10 +162,71 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, onDelete }) =
             </div>
           )}
         </div>
-        <button className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-blue hover:text-accent transition-colors">
-          Ver Telemetría
-        </button>
       </div>
+
+      {/* AI Analysis Modal */}
+      <AnimatePresence>
+        {showAnalysisModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAnalysisModal(false)}
+              className="absolute inset-0 bg-surface-dark/90 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-2xl bg-surface-card border border-white/10 rounded-none shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-primary-blue to-accent"></div>
+              
+              <div className="p-8">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-accent/10 flex items-center justify-center text-accent">
+                      <BrainCircuit size={28} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-black font-headline uppercase tracking-tight">Análisis de Rendimiento</h2>
+                      <p className="text-white/40 text-xs uppercase tracking-widest font-bold">{athlete.name}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowAnalysisModal(false)}
+                    className="text-white/20 hover:text-white transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+
+                <div className="prose prose-invert max-w-none">
+                  <div className="bg-surface-dark/50 p-6 border border-white/5 font-sans text-sm leading-relaxed text-white/80 whitespace-pre-wrap max-h-[60vh] overflow-y-auto custom-scrollbar">
+                    {analysisResult}
+                  </div>
+                </div>
+
+                <div className="mt-8 flex justify-end">
+                  <button 
+                    onClick={() => setShowAnalysisModal(false)}
+                    className="bg-accent text-surface-dark px-8 py-3 font-black uppercase tracking-widest text-xs hover:scale-105 transition-all shadow-[0_0_20px_rgba(42,229,0,0.3)]"
+                  >
+                    Entendido
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {error && (
+        <div className="absolute bottom-2 left-6 right-6 bg-red-500/10 border border-red-500/20 p-2 text-[10px] text-red-400 font-bold uppercase tracking-widest text-center">
+          {error}
+        </div>
+      )}
     </div>
   );
 };

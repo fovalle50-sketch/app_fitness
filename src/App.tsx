@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { Dashboard } from './components/Dashboard';
@@ -173,12 +173,19 @@ export default function App() {
       if (isAddingAthlete) {
         return <AthleteForm onAdd={handleAddAthlete} onCancel={() => setIsAddingAthlete(false)} />;
       }
-      return <AthleteList athletes={athletes} onAddNew={() => setIsAddingAthlete(true)} onDelete={handleDeleteAthlete} />;
+      return (
+        <AthleteList 
+          athletes={athletes} 
+          evaluations={evaluations}
+          onAddNew={() => setIsAddingAthlete(true)} 
+          onDelete={handleDeleteAthlete} 
+        />
+      );
     }
 
     switch (activeScreen) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard athletes={athletes} evaluations={evaluations} onDeleteAthlete={handleDeleteAthlete} />;
       case 'ejercicios':
         return <ExerciseManagement exercises={exercises} onAdd={handleAddExercise} onDelete={handleDeleteExercise} />;
       case 'evaluaciones':
