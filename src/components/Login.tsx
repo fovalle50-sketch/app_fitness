@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lock, LogIn, AlertCircle } from 'lucide-react';
 import { auth, googleProvider, signInWithPopup, signInAnonymously, db, getDocFromServer, doc } from '../firebase';
 
