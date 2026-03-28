@@ -39,6 +39,7 @@ export interface EvaluationPlan {
   date: string;
   exercises: PlannedExercise[];
   status: 'Planificada' | 'En Progreso' | 'Completada';
+  uid?: string;
 }
 
 export interface ExerciseResult {
@@ -57,6 +58,7 @@ export interface Evaluation {
   exercises: ExerciseResult[];
   finalGrade: number;
   status: 'Alto' | 'Medio' | 'Bajo';
+  uid?: string;
 }
 
 export interface PerformanceRecord {

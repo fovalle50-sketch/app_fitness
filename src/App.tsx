@@ -162,7 +162,8 @@ export default function App() {
   const handleUpdatePlan = async (updatedPlan: EvaluationPlan) => {
     if (!user) return;
     try {
-      await setDoc(doc(db, 'evaluationPlans', updatedPlan.id), updatedPlan);
+      const planData = { ...updatedPlan, uid: user.uid };
+      await setDoc(doc(db, 'evaluationPlans', updatedPlan.id), planData);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'evaluationPlans');
     }

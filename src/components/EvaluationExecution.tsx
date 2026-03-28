@@ -297,6 +297,11 @@ export const EvaluationExecution: React.FC<EvaluationExecutionProps> = ({ plan, 
                   <CheckCircle2 size={20} />
                   Finalizar y Guardar
                 </button>
+                {currentExercises.filter(ex => ex.isCompleted).length === 0 && (
+                  <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest text-center">
+                    Registra al menos un ejercicio para finalizar
+                  </p>
+                )}
                 <button 
                   onClick={onCancel}
                   className="w-full py-4 rounded-xl font-bold uppercase tracking-widest text-white/40 hover:bg-white/5 transition-all"
