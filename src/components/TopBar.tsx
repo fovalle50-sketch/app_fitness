@@ -4,15 +4,17 @@ import { Screen } from '../types';
 
 interface TopBarProps {
   activeScreen: Screen;
+  onSettingsClick: () => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ activeScreen }) => {
+export const TopBar: React.FC<TopBarProps> = ({ activeScreen, onSettingsClick }) => {
   const screenLabels: Record<Screen, string> = {
     dashboard: 'Dashboard',
     alumnos: 'Gestión de Alumnos',
     ejercicios: 'Gestión de Ejercicios',
     evaluaciones: 'Evaluaciones',
     reportes: 'Reportes Analíticos',
+    settings: 'Configuración del Sistema',
   };
 
   return (
@@ -36,7 +38,10 @@ export const TopBar: React.FC<TopBarProps> = ({ activeScreen }) => {
           <button className="p-2 text-primary-blue hover:bg-white/5 rounded-full transition-colors">
             <Bell size={20} />
           </button>
-          <button className="p-2 text-primary-blue hover:bg-white/5 rounded-full transition-colors">
+          <button 
+            onClick={onSettingsClick}
+            className="p-2 text-primary-blue hover:bg-white/5 rounded-full transition-colors"
+          >
             <Settings size={20} />
           </button>
           <div className="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-accent/30">

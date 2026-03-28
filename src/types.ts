@@ -1,4 +1,4 @@
-export type Screen = 'dashboard' | 'alumnos' | 'ejercicios' | 'evaluaciones' | 'reportes';
+export type Screen = 'dashboard' | 'alumnos' | 'ejercicios' | 'evaluaciones' | 'reportes' | 'settings';
 
 export interface Athlete {
   id: string;

@@ -201,8 +201,62 @@ export default function App() {
         );
       case 'reportes':
         return <PerformanceTable evaluations={evaluations} />;
+      case 'settings':
+        return (
+          <div className="max-w-4xl mx-auto py-12">
+            <h2 className="text-4xl font-black font-headline tracking-tighter mb-8 uppercase">Configuración del Sistema</h2>
+            <div className="bg-surface-card p-8 border border-white/5 space-y-8">
+              <div>
+                <h3 className="text-lg font-bold mb-4 text-accent uppercase tracking-widest">Perfil del Entrenador</h3>
+                <div className="flex items-center gap-6">
+                  <div className="w-20 h-20 rounded-full bg-surface-container overflow-hidden border-2 border-accent">
+                    <img src="https://picsum.photos/seed/coach/200/200" alt="Coach" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold">{user?.displayName || 'Coach Principal'}</p>
+                    <p className="text-white/40">{user?.email}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-8 border-t border-white/5">
+                <h3 className="text-lg font-bold mb-4 text-accent uppercase tracking-widest">Preferencias de Análisis IA</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                    <div>
+                      <p className="font-bold">Análisis Automático</p>
+                      <p className="text-sm text-white/40">Generar análisis IA inmediatamente después de cada evaluación.</p>
+                    </div>
+                    <div className="w-12 h-6 bg-accent rounded-full relative">
+                      <div className="absolute right-1 top-1 w-4 h-4 bg-surface-dark rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                    <div>
+                      <p className="font-bold">Notificaciones de Fatiga</p>
+                      <p className="text-sm text-white/40">Alertar cuando el sistema detecte niveles críticos de fatiga.</p>
+                    </div>
+                    <div className="w-12 h-6 bg-accent rounded-full relative">
+                      <div className="absolute right-1 top-1 w-4 h-4 bg-surface-dark rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-8 border-t border-white/5">
+                <button 
+                  onClick={handleLogout}
+                  className="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-6 py-3 rounded-lg font-bold transition-all flex items-center gap-2"
+                >
+                  <LogIn size={18} className="rotate-180" />
+                  Cerrar Sesión Actual
+                </button>
+              </div>
+            </div>
+          </div>
+        );
       default:
-        return <Dashboard />;
+        return <Dashboard athletes={athletes} evaluations={evaluations} onDeleteAthlete={handleDeleteAthlete} />;
     }
   };
 
@@ -220,11 +274,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-surface-dark text-white font-sans selection:bg-accent/30 selection:text-accent">
-      <Sidebar activeScreen={activeScreen} onScreenChange={(screen) => {
-        setActiveScreen(screen);
-        setIsAddingAthlete(false);
-      }} />
-      <TopBar activeScreen={activeScreen} />
+      <Sidebar 
+        activeScreen={activeScreen} 
+        onScreenChange={(screen) => {
+          setActiveScreen(screen);
+          setIsAddingAthlete(false);
+        }} 
+        onLogout={handleLogout}
+      />
+      <TopBar 
+        activeScreen={activeScreen} 
+        onSettingsClick={() => setActiveScreen('settings')}
+      />
       
       <main className="lg:ml-64 pt-24 pb-32 px-6 md:px-12 min-h-screen">
         {renderScreen()}
@@ -256,7 +317,7 @@ export default function App() {
             activeScreen === 'ejercicios' ? 'text-accent' : 'text-white/40'
           }`}
         >
-          <Settings2 size={20} className="mb-1" />
+          <Dumbbell size={20} className="mb-1" />
           Ejercicios
         </button>
         <button 
@@ -265,7 +326,7 @@ export default function App() {
             activeScreen === 'evaluaciones' ? 'text-accent' : 'text-white/40'
           }`}
         >
-          <Dumbbell size={20} className="mb-1" />
+          <Settings2 size={20} className="mb-1" />
           Evaluación
         </button>
         <button 

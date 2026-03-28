@@ -5,9 +5,10 @@ import { Screen } from '../types';
 interface SidebarProps {
   activeScreen: Screen;
   onScreenChange: (screen: Screen) => void;
+  onLogout: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onScreenChange }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onScreenChange, onLogout }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
     { id: 'alumnos', label: 'Alumnos', icon: Users },
@@ -55,7 +56,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onScreenChange }
           <HelpCircle size={18} />
           Soporte
         </button>
-        <button className="w-full text-white/50 hover:bg-surface-container hover:text-white px-4 py-3 flex items-center gap-3 transition-all duration-200 font-sans font-medium text-sm rounded-lg">
+        <button 
+          onClick={onLogout}
+          className="w-full text-white/50 hover:bg-surface-container hover:text-white px-4 py-3 flex items-center gap-3 transition-all duration-200 font-sans font-medium text-sm rounded-lg"
+        >
           <LogOut size={18} />
           Cerrar Sesión
         </button>

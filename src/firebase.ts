@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User, signInAnonymously } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User, signInAnonymously, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, getDocs, getDocFromServer, addDoc } from 'firebase/firestore';
 
 // Import the Firebase configuration
@@ -9,6 +9,11 @@ import firebaseConfig from '../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
+
+// Set session persistence so the session is cleared when the tab is closed
+setPersistence(auth, browserSessionPersistence).catch((error) => {
+  console.error("Error setting persistence:", error);
+});
 
 // Error handling
 export enum OperationType {
