@@ -33,6 +33,24 @@ import {
   handleFirestoreError
 } from './firebase';
 
+// Función de limpieza profunda para asegurar que no viajen 'undefined' a Firestore
+const deepClean = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(v => deepClean(v));
+  }
+  if (obj !== null && typeof obj === 'object') {
+    const cleaned: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const cleanedValue = deepClean(value);
+      if (cleanedValue !== undefined) {
+        cleaned[key] = cleanedValue;
+      }
+    }
+    return cleaned;
+  }
+  return obj === undefined ? null : obj;
+};
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -105,7 +123,7 @@ export default function App() {
   const handleAddAthlete = async (newAthlete: Athlete) => {
     if (!user) return;
     try {
-      const athleteData = JSON.parse(JSON.stringify({ ...newAthlete, uid: user.uid }));
+      const athleteData = deepClean({ ...newAthlete, uid: user.uid });
       await setDoc(doc(db, 'athletes', newAthlete.id), athleteData);
       setIsAddingAthlete(false);
       setActiveScreen('alumnos');
@@ -124,7 +142,7 @@ export default function App() {
 
   const handleAddExercise = async (newExercise: Exercise) => {
     try {
-      const exerciseData = JSON.parse(JSON.stringify(newExercise));
+      const exerciseData = deepClean(newExercise);
       await setDoc(doc(db, 'exercises', newExercise.id), exerciseData);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'exercises');
@@ -142,7 +160,7 @@ export default function App() {
   const handleSaveEvaluation = async (evaluation: Evaluation) => {
     if (!user) return;
     try {
-      const evalData = JSON.parse(JSON.stringify({ ...evaluation, uid: user.uid }));
+      const evalData = deepClean({ ...evaluation, uid: user.uid });
       await setDoc(doc(db, 'evaluations', evaluation.id), evalData);
       setActiveScreen('reportes');
     } catch (error) {
@@ -153,7 +171,7 @@ export default function App() {
   const handleSavePlan = async (plan: EvaluationPlan) => {
     if (!user) return;
     try {
-      const planData = JSON.parse(JSON.stringify({ ...plan, uid: user.uid }));
+      const planData = deepClean({ ...plan, uid: user.uid });
       await setDoc(doc(db, 'evaluationPlans', plan.id), planData);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'evaluationPlans');
@@ -163,7 +181,7 @@ export default function App() {
   const handleUpdatePlan = async (updatedPlan: EvaluationPlan) => {
     if (!user) return;
     try {
-      const planData = JSON.parse(JSON.stringify({ ...updatedPlan, uid: user.uid }));
+      const planData = deepClean({ ...updatedPlan, uid: user.uid });
       await setDoc(doc(db, 'evaluationPlans', updatedPlan.id), planData);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'evaluationPlans');

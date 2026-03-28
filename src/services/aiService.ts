@@ -6,7 +6,7 @@ let ai: GoogleGenAI | null = null;
 const getAI = () => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("Gemini API key is not configured. Please set GEMINI_API_KEY in environment variables.");
+    throw new Error("La clave de API de Gemini no está configurada. Por favor, configúrala en el menú de Configuración para habilitar el análisis de IA.");
   }
   if (!ai) {
     ai = new GoogleGenAI({ apiKey });
