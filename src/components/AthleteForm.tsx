@@ -28,7 +28,7 @@ export const AthleteForm: React.FC<AthleteFormProps> = ({ onAdd, onCancel }) => 
       weight: parseFloat(formData.weight),
       activityLevel: 0,
       status: formData.status,
-      imageUrl: `https://picsum.photos/seed/${formData.name}/200/200`,
+      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(formData.name)}/200/200`,
     };
 
     onAdd(newAthlete);

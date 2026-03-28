@@ -1,13 +1,20 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { Athlete, Evaluation } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+let ai: GoogleGenAI | null = null;
+
+const getAI = () => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("Gemini API key is not configured. Please set GEMINI_API_KEY in environment variables.");
+  }
+  if (!ai) {
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 export const analyzeAthletePerformance = async (athlete: Athlete, evaluations: Evaluation[]) => {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("Gemini API key is not configured.");
-  }
-
   const athleteEvaluations = evaluations.filter(e => e.athleteId === athlete.id);
   
   const prompt = `
@@ -36,7 +43,8 @@ export const analyzeAthletePerformance = async (athlete: Athlete, evaluations: E
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const aiInstance = getAI();
+    const response = await aiInstance.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {

@@ -55,10 +55,13 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, evaluations, 
         <div className="flex gap-4">
           <div className="w-16 h-16 bg-surface-container overflow-hidden border border-white/10">
             <img
-              src={athlete.imageUrl}
+              src={athlete.imageUrl || `https://picsum.photos/seed/${encodeURIComponent(athlete.name)}/200/200`}
               alt={athlete.name}
               className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = `https://via.placeholder.com/200?text=${encodeURIComponent(athlete.name)}`;
+              }}
             />
           </div>
           <div>
