@@ -29,7 +29,7 @@ export const AthleteForm: React.FC<AthleteFormProps> = ({ athlete, onAdd, onCanc
       gender: formData.gender,
       weight: parseFloat(formData.weight),
       activityLevel: athlete?.activityLevel || 0,
-      level: formData.level as 1 | 2 | 3 | 4 | 5,
+      level: formData.level,
       status: formData.status,
       imageUrl: athlete?.imageUrl || `https://picsum.photos/seed/${encodeURIComponent(formData.name)}/200/200`,
     };
@@ -111,23 +111,18 @@ export const AthleteForm: React.FC<AthleteFormProps> = ({ athlete, onAdd, onCanc
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Nivel del Alumno</label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((lvl) => (
-                <button
-                  key={lvl}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, level: lvl as any })}
-                  className={`flex-1 py-3 rounded-lg font-bold transition-all ${
-                    formData.level === lvl 
-                      ? 'bg-accent text-surface-dark shadow-[0_0_15px_rgba(42,229,0,0.3)]' 
-                      : 'bg-surface-dark text-white/40 hover:bg-white/5'
-                  }`}
-                >
-                  {lvl}
-                </button>
-              ))}
-            </div>
+            <label className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Nivel Inicial (0-10)</label>
+            <input 
+              type="number" 
+              step="0.1"
+              min="0"
+              max="10"
+              required
+              value={formData.level}
+              onChange={(e) => setFormData({ ...formData, level: parseFloat(e.target.value) })}
+              className="w-full bg-surface-dark border-none text-white p-4 rounded-lg focus:ring-2 focus:ring-accent/50 transition-all font-semibold"
+              placeholder="5.0"
+            />
           </div>
 
           <div className="space-y-2">

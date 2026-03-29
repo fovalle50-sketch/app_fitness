@@ -201,9 +201,25 @@ export default function App() {
     try {
       const evalData = deepClean({ ...evaluation, uid: user.uid });
       await setDoc(doc(db, 'evaluations', evaluation.id), evalData);
+      
+      // Update athlete level to the final grade of the latest evaluation
+      const athlete = athletes.find(a => a.id === evaluation.athleteId);
+      if (athlete) {
+        const updatedAthlete = { ...athlete, level: evaluation.finalGrade };
+        await handleUpdateAthlete(updatedAthlete);
+      }
+
       setActiveScreen('reportes');
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'evaluations');
+    }
+  };
+
+  const handleDeleteEvaluation = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'evaluations', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'evaluations');
     }
   };
 
@@ -336,7 +352,7 @@ export default function App() {
           />
         );
       case 'reportes':
-        return <PerformanceTable evaluations={evaluations} />;
+        return <PerformanceTable evaluations={evaluations} onDelete={handleDeleteEvaluation} />;
       case 'templates':
         return (
           <EvaluationTemplates 
@@ -508,15 +524,6 @@ export default function App() {
           Reportes
         </button>
       </nav>
-
-      {/* Logout button for desktop (optional but good) */}
-      <button 
-        onClick={handleLogout}
-        className="hidden lg:flex fixed bottom-12 left-6 bg-white/5 hover:bg-red-500/10 text-white/20 hover:text-red-400 p-3 rounded-xl transition-all z-50 border border-white/5"
-        title="Cerrar Sesión"
-      >
-        <LogIn size={20} className="rotate-180" />
-      </button>
 
       {/* Floating Action Button */}
       <button 

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Search, Filter, Download, ChevronDown, ChevronUp, Activity, Calendar, User, Award, Info } from 'lucide-react';
+import { Search, Filter, Download, ChevronDown, ChevronUp, Activity, Calendar, User, Award, Info, Trash2, X, AlertCircle } from 'lucide-react';
 import { Evaluation } from '../types';
 
 interface PerformanceTableProps {
   evaluations: Evaluation[];
+  onDelete: (id: string) => void;
 }
 
-export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations }) => {
+export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filteredEvaluations = evaluations.filter(ev => 
     ev.athleteName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -16,6 +18,56 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  const exportToCSV = () => {
+    if (evaluations.length === 0) return;
+
+    // Headers
+    const headers = [
+      'ID Evaluación',
+      'Atleta',
+      'Fecha',
+      'Nota Final',
+      'Estado',
+      'Ejercicio',
+      'Reps',
+      'Carga (kg)',
+      'Score Ejercicio'
+    ];
+
+    const rows: string[][] = [];
+
+    evaluations.forEach(ev => {
+      ev.exercises.forEach(ex => {
+        rows.push([
+          ev.id,
+          ev.athleteName,
+          new Date(ev.date).toLocaleString(),
+          ev.finalGrade.toString(),
+          ev.status,
+          ex.exerciseName,
+          ex.reps.toString(),
+          ex.load.toString(),
+          ex.score.toString()
+        ]);
+      });
+    });
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `kinetic_evaluations_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -30,7 +82,10 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
           <p className="text-white/40 max-w-lg text-sm leading-relaxed">Historial consolidado de evaluaciones multi-ejercicio y análisis cinético avanzado.</p>
         </div>
         <div className="flex gap-4">
-          <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-all text-xs font-bold uppercase tracking-widest border border-white/5">
+          <button 
+            onClick={exportToCSV}
+            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-all text-xs font-bold uppercase tracking-widest border border-white/5"
+          >
             <Download size={14} /> Exportar CSV
           </button>
         </div>
@@ -65,7 +120,7 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
                 <th className="px-6 py-5">Ejercicios</th>
                 <th className="px-6 py-5">Nota Final</th>
                 <th className="px-6 py-5">Estado</th>
-                <th className="px-6 py-5 text-right">Detalles</th>
+                <th className="px-6 py-5 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -114,9 +169,21 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
                         </span>
                       </td>
                       <td className="px-6 py-5 text-right">
-                        <button className="text-white/20 group-hover:text-accent transition-colors">
-                          {expandedId === ev.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        </button>
+                        <div className="flex items-center justify-end gap-4">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingId(ev.id);
+                            }}
+                            className="text-white/20 hover:text-red-400 transition-colors p-2"
+                            title="Eliminar Evaluación"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                          <button className="text-white/20 group-hover:text-accent transition-colors">
+                            {expandedId === ev.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     {expandedId === ev.id && (
@@ -155,6 +222,40 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ evaluations 
           </table>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {deletingId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            onClick={() => setDeletingId(null)}
+            className="absolute inset-0 bg-surface-dark/80 backdrop-blur-md"
+          />
+          <div className="relative w-full max-w-md bg-surface-card rounded-2xl border border-white/10 shadow-2xl p-8 text-center">
+            <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle size={32} />
+            </div>
+            <h3 className="text-2xl font-headline font-black uppercase italic tracking-tight mb-2">¿Confirmar Eliminación?</h3>
+            <p className="text-white/40 text-sm mb-8">Esta acción no se puede deshacer. Se eliminarán permanentemente los datos de esta evaluación.</p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setDeletingId(null)}
+                className="flex-1 bg-white/5 text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={() => {
+                  onDelete(deletingId);
+                  setDeletingId(null);
+                }}
+                className="flex-1 bg-red-500 text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Methodology Note */}
       <div className="bg-primary-blue/5 border border-primary-blue/20 p-6 rounded-2xl flex gap-4">

@@ -108,19 +108,19 @@ export const AthleteDetail: React.FC<AthleteDetailProps> = ({ athlete, evaluatio
               <div>
                 <div className="flex justify-between text-[10px] uppercase font-bold mb-2">
                   <span className="text-white/40">Nivel de Progreso</span>
-                  <span className="text-accent">{athlete.level * 20}%</span>
+                  <span className="text-accent">{athlete.level * 10}%</span>
                 </div>
                 <div className="h-1.5 bg-surface-dark rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-accent transition-all duration-1000"
-                    style={{ width: `${athlete.level * 20}%` }}
+                    style={{ width: `${athlete.level * 10}%` }}
                   ></div>
                 </div>
               </div>
               <p className="text-xs text-white/40 italic leading-relaxed">
-                El alumno se encuentra en el nivel {athlete.level} de 5. 
-                {athlete.level >= 4 ? ' Muestra un rendimiento excepcional.' : 
-                 athlete.level >= 2 ? ' Sigue progresando de manera constante.' : 
+                El alumno se encuentra en el nivel {athlete.level} de 10. 
+                {athlete.level >= 8 ? ' Muestra un rendimiento excepcional.' : 
+                 athlete.level >= 5 ? ' Sigue progresando de manera constante.' : 
                  ' Está en las etapas iniciales de su desarrollo.'}
               </p>
             </div>
