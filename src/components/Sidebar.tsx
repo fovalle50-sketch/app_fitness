@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Users, Dumbbell, BarChart3, HelpCircle, LogOut, Plus, Settings2 } from 'lucide-react';
+import { LayoutGrid, Users, Dumbbell, BarChart3, HelpCircle, LogOut, Plus, Settings2, ClipboardList } from 'lucide-react';
 import { Screen } from '../types';
 
 interface SidebarProps {
@@ -14,6 +14,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onScreenChange, 
     { id: 'alumnos', label: 'Alumnos', icon: Users },
     { id: 'ejercicios', label: 'Ejercicios', icon: Settings2 },
     { id: 'evaluaciones', label: 'Evaluaciones', icon: Dumbbell },
+    { id: 'templates', label: 'Templates', icon: ClipboardList },
     { id: 'reportes', label: 'Reportes', icon: BarChart3 },
   ] as const;
 

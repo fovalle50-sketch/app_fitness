@@ -1,17 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Trash2, CheckCircle2, X, Dumbbell, Timer, Scale } from 'lucide-react';
-import { Athlete, Exercise, EvaluationPlan, PlannedExercise } from '../types';
+import { Plus, Trash2, CheckCircle2, X, Dumbbell, Timer, ClipboardList } from 'lucide-react';
+import { Athlete, Exercise, EvaluationPlan, PlannedExercise, EvaluationTemplate } from '../types';
 
 interface EvaluationPlannerProps {
   athletes: Athlete[];
   exercises: Exercise[];
+  templates: EvaluationTemplate[];
   onSave: (plan: EvaluationPlan) => void;
   onCancel: () => void;
 }
 
-export const EvaluationPlanner: React.FC<EvaluationPlannerProps> = ({ athletes, exercises, onSave, onCancel }) => {
+export const EvaluationPlanner: React.FC<EvaluationPlannerProps> = ({ athletes, exercises, templates, onSave, onCancel }) => {
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>('');
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [targetReps, setTargetReps] = useState<string>('');
   const [targetTime, setTargetTime] = useState<string>('');
   const [targetLoad, setTargetLoad] = useState<string>('');
@@ -26,6 +28,23 @@ export const EvaluationPlanner: React.FC<EvaluationPlannerProps> = ({ athletes, 
     exercises.find(e => e.id === selectedExerciseId),
     [exercises, selectedExerciseId]
   );
+
+  const handleApplyTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      const newPlanned: PlannedExercise[] = template.exercises.map(te => ({
+        id: Math.random().toString(36).substr(2, 9),
+        exerciseId: te.exerciseId,
+        exerciseName: te.exerciseName,
+        targetReps: te.targetReps,
+        targetTime: te.targetTime,
+        targetLoad: te.targetLoad,
+        isCompleted: false,
+      }));
+      setPlannedExercises(newPlanned);
+    }
+  };
 
   const handleAddExercise = () => {
     if (!selectedExercise || !selectedAthlete) return;
@@ -82,18 +101,37 @@ export const EvaluationPlanner: React.FC<EvaluationPlannerProps> = ({ athletes, 
 
       <div className="p-8 space-y-8">
         {/* Athlete Selection */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Atleta</label>
-          <select 
-            value={selectedAthleteId}
-            onChange={(e) => setSelectedAthleteId(e.target.value)}
-            className="w-full bg-surface-dark border-none text-white p-4 rounded-lg appearance-none focus:ring-2 focus:ring-accent/50 transition-all font-semibold"
-          >
-            <option value="">Seleccionar Atleta...</option>
-            {athletes.map(a => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Atleta</label>
+            <select 
+              value={selectedAthleteId}
+              onChange={(e) => setSelectedAthleteId(e.target.value)}
+              className="w-full bg-surface-dark border-none text-white p-4 rounded-lg appearance-none focus:ring-2 focus:ring-accent/50 transition-all font-semibold"
+            >
+              <option value="">Seleccionar Atleta...</option>
+              {athletes.map(a => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Usar Template (Opcional)</label>
+            <div className="relative">
+              <ClipboardList className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+              <select 
+                value={selectedTemplateId}
+                onChange={(e) => handleApplyTemplate(e.target.value)}
+                className="w-full bg-surface-dark border-none text-white p-4 pl-12 rounded-lg appearance-none focus:ring-2 focus:ring-accent/50 transition-all font-semibold"
+              >
+                <option value="">Ninguno</option>
+                {templates.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Exercise Planning */}

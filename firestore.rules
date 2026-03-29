@@ -61,6 +61,15 @@ service cloud.firestore {
     //   - status: string (required)
     //   - uid: string (required, owner)
     //
+    // Collection: evaluationTemplates
+    // Document ID: templateId
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - description: string (optional)
+    //   - exercises: list (required)
+    //   - uid: string (required, owner)
+    //
     // ===============================================================
 
     // ===============================================================
@@ -161,6 +170,14 @@ service cloud.firestore {
              data.uid is string;
     }
 
+    function isValidEvaluationTemplate(data) {
+      return hasOnlyAllowedFields(['id', 'name', 'description', 'exercises', 'uid']) &&
+             data.id is string && data.id.size() > 0 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.exercises is list &&
+             data.uid is string;
+    }
+
     // ===============================================================
     // Match Rules
     // ===============================================================
@@ -196,6 +213,13 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidEvaluationPlan(request.resource.data);
       allow update: if isAuthenticated() && isValidEvaluationPlan(request.resource.data);
+      allow delete: if isAuthenticated();
+    }
+
+    match /evaluationTemplates/{templateId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidEvaluationTemplate(request.resource.data);
+      allow update: if isAuthenticated() && isValidEvaluationTemplate(request.resource.data);
       allow delete: if isAuthenticated();
     }
   }

@@ -14,6 +14,7 @@ export const TopBar: React.FC<TopBarProps> = ({ activeScreen, onSettingsClick })
     ejercicios: 'Gestión de Ejercicios',
     evaluaciones: 'Evaluaciones',
     reportes: 'Reportes Analíticos',
+    templates: 'Plantillas de Evaluación',
     settings: 'Configuración del Sistema',
   };
 

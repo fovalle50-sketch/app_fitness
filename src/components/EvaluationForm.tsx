@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Timer, Plus, Play, CheckCircle2, Calendar, User, ChevronRight, LayoutGrid, ClipboardList } from 'lucide-react';
-import { Athlete, Evaluation, Exercise, EvaluationPlan } from '../types';
+import { Athlete, Evaluation, Exercise, EvaluationPlan, EvaluationTemplate } from '../types';
 import { EvaluationPlanner } from './EvaluationPlanner';
 import { EvaluationExecution } from './EvaluationExecution';
 
@@ -8,6 +8,7 @@ interface EvaluationFormProps {
   athletes: Athlete[];
   exercises: Exercise[];
   plans: EvaluationPlan[];
+  templates: EvaluationTemplate[];
   onSavePlan: (plan: EvaluationPlan) => void;
   onUpdatePlan: (plan: EvaluationPlan) => void;
   onSaveEvaluation: (evaluation: Evaluation) => void;
@@ -19,6 +20,7 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
   athletes, 
   exercises, 
   plans, 
+  templates,
   onSavePlan, 
   onUpdatePlan, 
   onSaveEvaluation 
@@ -54,6 +56,7 @@ export const EvaluationForm: React.FC<EvaluationFormProps> = ({
       <EvaluationPlanner 
         athletes={athletes} 
         exercises={exercises} 
+        templates={templates}
         onSave={handleSavePlan} 
         onCancel={() => setView('list')} 
       />

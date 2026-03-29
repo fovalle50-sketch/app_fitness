@@ -13,9 +13,10 @@ import { AthleteList } from './components/AthleteList';
 import { AthleteForm } from './components/AthleteForm';
 import { AthleteDetail } from './components/AthleteDetail';
 import { ExerciseManagement } from './components/ExerciseManagement';
+import { EvaluationTemplates } from './components/EvaluationTemplates';
 import { Login } from './components/Login';
-import { Screen, Athlete, Evaluation, Exercise, EvaluationPlan } from './types';
-import { Plus, LayoutGrid, Users, Dumbbell, BarChart3, Settings2, LogIn } from 'lucide-react';
+import { Screen, Athlete, Evaluation, Exercise, EvaluationPlan, EvaluationTemplate } from './types';
+import { Plus, LayoutGrid, Users, Dumbbell, BarChart3, Settings2, LogIn, ClipboardList } from 'lucide-react';
 import { 
   auth, 
   db, 
@@ -60,6 +61,7 @@ export default function App() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [evaluationPlans, setEvaluationPlans] = useState<EvaluationPlan[]>([]);
+  const [evaluationTemplates, setEvaluationTemplates] = useState<EvaluationTemplate[]>([]);
   const [isAddingAthlete, setIsAddingAthlete] = useState(false);
   const [editingAthlete, setEditingAthlete] = useState<Athlete | null>(null);
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
@@ -80,6 +82,7 @@ export default function App() {
       setExercises([]);
       setEvaluations([]);
       setEvaluationPlans([]);
+      setEvaluationTemplates([]);
       return;
     }
 
@@ -110,11 +113,18 @@ export default function App() {
       setEvaluationPlans(data);
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'evaluationPlans'));
 
+    // Evaluation Templates Sync
+    const templatesUnsubscribe = onSnapshot(query(collection(db, 'evaluationTemplates'), where('uid', '==', user.uid)), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as EvaluationTemplate));
+      setEvaluationTemplates(data);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'evaluationTemplates'));
+
     return () => {
       athletesUnsubscribe();
       exercisesUnsubscribe();
       evaluationsUnsubscribe();
       plansUnsubscribe();
+      templatesUnsubscribe();
     };
   }, [user]);
 
@@ -217,6 +227,34 @@ export default function App() {
     }
   };
 
+  const handleAddTemplate = async (newTemplate: EvaluationTemplate) => {
+    if (!user) return;
+    try {
+      const templateData = deepClean({ ...newTemplate, uid: user.uid });
+      await setDoc(doc(db, 'evaluationTemplates', newTemplate.id), templateData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'evaluationTemplates');
+    }
+  };
+
+  const handleUpdateTemplate = async (updatedTemplate: EvaluationTemplate) => {
+    if (!user) return;
+    try {
+      const templateData = deepClean({ ...updatedTemplate, uid: user.uid });
+      await setDoc(doc(db, 'evaluationTemplates', updatedTemplate.id), templateData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'evaluationTemplates');
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'evaluationTemplates', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'evaluationTemplates');
+    }
+  };
+
   const renderScreen = () => {
     if (activeScreen === 'alumnos') {
       if (isAddingAthlete || editingAthlete) {
@@ -291,6 +329,7 @@ export default function App() {
             athletes={athletes} 
             exercises={exercises} 
             plans={evaluationPlans}
+            templates={evaluationTemplates}
             onSavePlan={handleSavePlan}
             onUpdatePlan={handleUpdatePlan}
             onSaveEvaluation={handleSaveEvaluation} 
@@ -298,6 +337,16 @@ export default function App() {
         );
       case 'reportes':
         return <PerformanceTable evaluations={evaluations} />;
+      case 'templates':
+        return (
+          <EvaluationTemplates 
+            templates={evaluationTemplates}
+            exercises={exercises}
+            onAdd={handleAddTemplate}
+            onUpdate={handleUpdateTemplate}
+            onDelete={handleDeleteTemplate}
+          />
+        );
       case 'settings':
         return (
           <div className="max-w-4xl mx-auto py-12">
@@ -439,6 +488,15 @@ export default function App() {
         >
           <Settings2 size={20} className="mb-1" />
           Evaluación
+        </button>
+        <button 
+          onClick={() => { setActiveScreen('templates'); setIsAddingAthlete(false); }}
+          className={`flex flex-col items-center justify-center p-2 font-sans font-semibold text-[10px] uppercase transition-all ${
+            activeScreen === 'templates' ? 'text-accent' : 'text-white/40'
+          }`}
+        >
+          <ClipboardList size={20} className="mb-1" />
+          Templates
         </button>
         <button 
           onClick={() => { setActiveScreen('reportes'); setIsAddingAthlete(false); }}

@@ -1,4 +1,4 @@
-export type Screen = 'dashboard' | 'alumnos' | 'ejercicios' | 'evaluaciones' | 'reportes' | 'settings';
+export type Screen = 'dashboard' | 'alumnos' | 'ejercicios' | 'evaluaciones' | 'reportes' | 'templates' | 'settings';
 
 export interface Athlete {
   id: string;
@@ -71,6 +71,20 @@ export interface PerformanceRecord {
   score: number;
   status: 'Alto' | 'Medio' | 'Bajo';
   observation: string;
+}
+
+export interface EvaluationTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  exercises: {
+    exerciseId: string;
+    exerciseName: string;
+    targetReps?: number;
+    targetTime?: string;
+    targetLoad?: number;
+  }[];
+  uid?: string;
 }
 
 export interface WeeklyStats {

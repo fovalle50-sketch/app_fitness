@@ -11,11 +11,12 @@
         "gender": { "type": "string", "enum": ["Masculino", "Femenino"] },
         "weight": { "type": "number" },
         "activityLevel": { "type": "number" },
+        "level": { "type": "number", "minimum": 1, "maximum": 5 },
         "status": { "type": "string", "enum": ["Pro Elite", "Alto Rendimiento", "Fatiga Detectada"] },
         "imageUrl": { "type": "string" },
         "uid": { "type": "string", "description": "The UID of the user who created this athlete." }
       },
-      "required": ["id", "name", "birthDate", "gender", "weight", "status", "uid"]
+      "required": ["id", "name", "birthDate", "gender", "weight", "level", "status", "uid"]
     },
     "exercise": {
       "title": "Exercise",
@@ -26,9 +27,35 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "category": { "type": "string", "enum": ["Tracción", "Empuje", "Pierna", "Core", "Cardio"] },
-        "requiresLoad": { "type": "boolean" }
+        "requiresLoad": { "type": "boolean" },
+        "uid": { "type": "string" }
       },
-      "required": ["id", "name", "category", "requiresLoad"]
+      "required": ["id", "name", "category", "requiresLoad", "uid"]
+    },
+    "evaluationTemplate": {
+      "title": "Evaluation Template",
+      "description": "A template for an evaluation.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "exercises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "exerciseId": { "type": "string" },
+              "exerciseName": { "type": "string" },
+              "targetReps": { "type": "number" },
+              "targetTime": { "type": "string" },
+              "targetLoad": { "type": "number" }
+            }
+          }
+        },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "name", "exercises", "uid"]
     },
     "evaluation": {
       "title": "Evaluation",
@@ -119,6 +146,10 @@
     "/evaluationPlans/{planId}": {
       "schema": "evaluationPlan",
       "description": "Collection of evaluation plans."
+    },
+    "/evaluationTemplates/{templateId}": {
+      "schema": "evaluationTemplate",
+      "description": "Collection of evaluation templates."
     },
     "/users/{userId}": {
       "schema": "user",
