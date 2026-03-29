@@ -25,14 +25,27 @@ export const EvaluationExecution: React.FC<EvaluationExecutionProps> = ({ plan, 
   const calculateScore = (reps: number, load: number, athlete: Athlete, exercise: Exercise) => {
     const age = calculateAge(athlete.birthDate);
     const cargaValue = exercise.requiresLoad ? load : 1;
-    const totalCarga = reps * cargaValue;
-    const sexoFactor = athlete.gender === 'Masculino' ? 1.0 : 1.2;
     
-    const rawScore = (totalCarga * age * sexoFactor) / athlete.weight;
-    const normalizationFactor = exercise.requiresLoad ? 40 : 10;
-    const normalizedScore = rawScore / normalizationFactor;
+    // Base intensity calculation
+    const intensity = reps * cargaValue;
     
-    return Math.min(10, Math.max(0, parseFloat(normalizedScore.toFixed(1))));
+    // Gender factor: Females get a 15% boost for the same relative load
+    const genderFactor = athlete.gender === 'Femenino' ? 1.15 : 1.0;
+    
+    // Age factor: Older athletes get more credit (baseline 25 years)
+    const ageFactor = Math.max(1, age / 25);
+    
+    // Strength-to-weight ratio
+    const relativeStrength = intensity / athlete.weight;
+    
+    // Normalization: 
+    // For bodyweight (requiresLoad=false), 15-20 reps should be a decent score (~7-8)
+    // For weighted (requiresLoad=true), reps * load / weight = 5 should be a decent score
+    const normalizationFactor = exercise.requiresLoad ? 0.8 : 0.15;
+    
+    const score = (relativeStrength * genderFactor * ageFactor) / normalizationFactor;
+    
+    return Math.min(10, Math.max(0, parseFloat(score.toFixed(1))));
   };
 
   const handleStartExercise = (ex: PlannedExercise) => {

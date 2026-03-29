@@ -23,6 +23,7 @@ service cloud.firestore {
     //   - gender: string (required)
     //   - weight: number (required)
     //   - activityLevel: number (optional)
+    //   - level: number (required, 1-5)
     //   - status: string (required)
     //   - imageUrl: string (optional)
     //   - uid: string (required, owner)
@@ -35,6 +36,7 @@ service cloud.firestore {
     //   - description: string (optional)
     //   - category: string (required)
     //   - requiresLoad: bool (required)
+    //   - uid: string (required, owner)
     //
     // Collection: evaluations
     // Document ID: evaluationId
@@ -118,22 +120,24 @@ service cloud.firestore {
     }
 
     function isValidAthlete(data) {
-      return hasOnlyAllowedFields(['id', 'name', 'birthDate', 'gender', 'weight', 'activityLevel', 'status', 'imageUrl', 'uid']) &&
+      return hasOnlyAllowedFields(['id', 'name', 'birthDate', 'gender', 'weight', 'activityLevel', 'level', 'status', 'imageUrl', 'uid']) &&
              data.id is string && data.id.size() > 0 &&
              data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
              data.birthDate is string &&
              data.gender in ['Masculino', 'Femenino'] &&
              data.weight is number && data.weight > 0 &&
+             data.level is number && data.level >= 1 && data.level <= 5 &&
              data.status in ['Pro Elite', 'Alto Rendimiento', 'Fatiga Detectada'] &&
              data.uid is string;
     }
 
     function isValidExercise(data) {
-      return hasOnlyAllowedFields(['id', 'name', 'description', 'category', 'requiresLoad']) &&
+      return hasOnlyAllowedFields(['id', 'name', 'description', 'category', 'requiresLoad', 'uid']) &&
              data.id is string && data.id.size() > 0 &&
              data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
              data.category in ['Tracción', 'Empuje', 'Pierna', 'Core', 'Cardio'] &&
-             data.requiresLoad is bool;
+             data.requiresLoad is bool &&
+             data.uid is string;
     }
 
     function isValidEvaluation(data) {
