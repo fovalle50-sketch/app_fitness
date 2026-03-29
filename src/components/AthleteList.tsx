@@ -8,9 +8,11 @@ interface AthleteListProps {
   evaluations: Evaluation[];
   onAddNew: () => void;
   onDelete: (id: string) => void;
+  onEdit: (athlete: Athlete) => void;
+  onSelect: (athlete: Athlete) => void;
 }
 
-export const AthleteList: React.FC<AthleteListProps> = ({ athletes, evaluations, onAddNew, onDelete }) => {
+export const AthleteList: React.FC<AthleteListProps> = ({ athletes, evaluations, onAddNew, onDelete, onEdit, onSelect }) => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -39,7 +41,14 @@ export const AthleteList: React.FC<AthleteListProps> = ({ athletes, evaluations,
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {athletes.map(athlete => (
-          <AthleteCard key={athlete.id} athlete={athlete} evaluations={evaluations} onDelete={onDelete} />
+          <AthleteCard 
+            key={athlete.id} 
+            athlete={athlete} 
+            evaluations={evaluations} 
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onSelect={onSelect}
+          />
         ))}
         
         {/* Empty State / Add New Placeholder */}

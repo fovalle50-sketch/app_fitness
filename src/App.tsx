@@ -11,6 +11,7 @@ import { EvaluationForm } from './components/EvaluationForm';
 import { PerformanceTable } from './components/PerformanceTable';
 import { AthleteList } from './components/AthleteList';
 import { AthleteForm } from './components/AthleteForm';
+import { AthleteDetail } from './components/AthleteDetail';
 import { ExerciseManagement } from './components/ExerciseManagement';
 import { Login } from './components/Login';
 import { Screen, Athlete, Evaluation, Exercise, EvaluationPlan } from './types';
@@ -60,6 +61,8 @@ export default function App() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [evaluationPlans, setEvaluationPlans] = useState<EvaluationPlan[]>([]);
   const [isAddingAthlete, setIsAddingAthlete] = useState(false);
+  const [editingAthlete, setEditingAthlete] = useState<Athlete | null>(null);
+  const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
 
   // Auth Listener
   useEffect(() => {
@@ -81,25 +84,28 @@ export default function App() {
     }
 
     // Athletes Sync
-    const athletesUnsubscribe = onSnapshot(collection(db, 'athletes'), (snapshot) => {
+    const athletesUnsubscribe = onSnapshot(query(collection(db, 'athletes'), where('uid', '==', user.uid)), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Athlete));
       setAthletes(data);
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'athletes'));
 
-    // Exercises Sync
-    const exercisesUnsubscribe = onSnapshot(collection(db, 'exercises'), (snapshot) => {
+    // Exercises Sync - Exercises are shared or also per user? 
+    // Usually exercises are shared, but user might want their own. 
+    // Let's keep them shared for now but allow user to add their own if we want.
+    // Actually, let's make them per user to avoid mixing up data.
+    const exercisesUnsubscribe = onSnapshot(query(collection(db, 'exercises'), where('uid', '==', user.uid)), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Exercise));
       setExercises(data);
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'exercises'));
 
     // Evaluations Sync
-    const evaluationsUnsubscribe = onSnapshot(collection(db, 'evaluations'), (snapshot) => {
+    const evaluationsUnsubscribe = onSnapshot(query(collection(db, 'evaluations'), where('uid', '==', user.uid)), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Evaluation));
       setEvaluations(data);
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'evaluations'));
 
     // Evaluation Plans Sync
-    const plansUnsubscribe = onSnapshot(collection(db, 'evaluationPlans'), (snapshot) => {
+    const plansUnsubscribe = onSnapshot(query(collection(db, 'evaluationPlans'), where('uid', '==', user.uid)), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as EvaluationPlan));
       setEvaluationPlans(data);
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'evaluationPlans'));
@@ -132,6 +138,19 @@ export default function App() {
     }
   };
 
+  const handleUpdateAthlete = async (updatedAthlete: Athlete) => {
+    if (!user) return;
+    try {
+      const athleteData = deepClean({ ...updatedAthlete, uid: user.uid });
+      await setDoc(doc(db, 'athletes', updatedAthlete.id), athleteData);
+      setIsAddingAthlete(false);
+      setEditingAthlete(null);
+      setActiveScreen('alumnos');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'athletes');
+    }
+  };
+
   const handleDeleteAthlete = async (id: string) => {
     try {
       await deleteDoc(doc(db, 'athletes', id));
@@ -141,11 +160,21 @@ export default function App() {
   };
 
   const handleAddExercise = async (newExercise: Exercise) => {
+    if (!user) return;
     try {
-      const exerciseData = deepClean(newExercise);
+      const exerciseData = deepClean({ ...newExercise, uid: user.uid });
       await setDoc(doc(db, 'exercises', newExercise.id), exerciseData);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'exercises');
+    }
+  };
+
+  const handleUpdateExercise = async (updatedExercise: Exercise) => {
+    try {
+      const exerciseData = deepClean(updatedExercise);
+      await setDoc(doc(db, 'exercises', updatedExercise.id), exerciseData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'exercises');
     }
   };
 
@@ -190,8 +219,33 @@ export default function App() {
 
   const renderScreen = () => {
     if (activeScreen === 'alumnos') {
-      if (isAddingAthlete) {
-        return <AthleteForm onAdd={handleAddAthlete} onCancel={() => setIsAddingAthlete(false)} />;
+      if (isAddingAthlete || editingAthlete) {
+        return (
+          <AthleteForm 
+            athlete={editingAthlete || undefined}
+            onAdd={editingAthlete ? handleUpdateAthlete : handleAddAthlete} 
+            onCancel={() => {
+              setIsAddingAthlete(false);
+              setEditingAthlete(null);
+            }} 
+          />
+        );
+      }
+      if (selectedAthleteId) {
+        const athlete = athletes.find(a => a.id === selectedAthleteId);
+        if (athlete) {
+          return (
+            <AthleteDetail 
+              athlete={athlete} 
+              evaluations={evaluations.filter(e => e.athleteId === athlete.id)}
+              onBack={() => setSelectedAthleteId(null)}
+              onEdit={() => {
+                setEditingAthlete(athlete);
+                setSelectedAthleteId(null);
+              }}
+            />
+          );
+        }
       }
       return (
         <AthleteList 
@@ -199,15 +253,38 @@ export default function App() {
           evaluations={evaluations}
           onAddNew={() => setIsAddingAthlete(true)} 
           onDelete={handleDeleteAthlete} 
+          onEdit={(athlete) => setEditingAthlete(athlete)}
+          onSelect={(athlete) => setSelectedAthleteId(athlete.id)}
         />
       );
     }
 
     switch (activeScreen) {
       case 'dashboard':
-        return <Dashboard athletes={athletes} evaluations={evaluations} onDeleteAthlete={handleDeleteAthlete} />;
+        return (
+          <Dashboard 
+            athletes={athletes} 
+            evaluations={evaluations} 
+            onDeleteAthlete={handleDeleteAthlete} 
+            onEditAthlete={(athlete) => {
+              setEditingAthlete(athlete);
+              setActiveScreen('alumnos');
+            }}
+            onSelectAthlete={(athlete) => {
+              setSelectedAthleteId(athlete.id);
+              setActiveScreen('alumnos');
+            }}
+          />
+        );
       case 'ejercicios':
-        return <ExerciseManagement exercises={exercises} onAdd={handleAddExercise} onDelete={handleDeleteExercise} />;
+        return (
+          <ExerciseManagement 
+            exercises={exercises} 
+            onAdd={handleAddExercise} 
+            onUpdate={handleUpdateExercise}
+            onDelete={handleDeleteExercise} 
+          />
+        );
       case 'evaluaciones':
         return (
           <EvaluationForm 
@@ -276,7 +353,21 @@ export default function App() {
           </div>
         );
       default:
-        return <Dashboard athletes={athletes} evaluations={evaluations} onDeleteAthlete={handleDeleteAthlete} />;
+        return (
+          <Dashboard 
+            athletes={athletes} 
+            evaluations={evaluations} 
+            onDeleteAthlete={handleDeleteAthlete} 
+            onEditAthlete={(athlete) => {
+              setEditingAthlete(athlete);
+              setActiveScreen('alumnos');
+            }}
+            onSelectAthlete={(athlete) => {
+              setSelectedAthleteId(athlete.id);
+              setActiveScreen('alumnos');
+            }}
+          />
+        );
     }
   };
 

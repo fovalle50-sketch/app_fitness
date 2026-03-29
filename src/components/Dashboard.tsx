@@ -6,9 +6,11 @@ interface DashboardProps {
   athletes: Athlete[];
   evaluations: Evaluation[];
   onDeleteAthlete: (id: string) => void;
+  onEditAthlete: (athlete: Athlete) => void;
+  onSelectAthlete: (athlete: Athlete) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ athletes, evaluations, onDeleteAthlete }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ athletes, evaluations, onDeleteAthlete, onEditAthlete, onSelectAthlete }) => {
   // Calculate some stats from real data
   const totalAthletes = athletes.length;
   const inSessionCount = athletes.filter(a => a.status === 'Pro Elite').length; // Just a placeholder logic
@@ -48,7 +50,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ athletes, evaluations, onD
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
         {athletes.length > 0 ? (
           athletes.slice(0, 6).map(athlete => (
-            <AthleteCard key={athlete.id} athlete={athlete} evaluations={evaluations} onDelete={onDeleteAthlete} />
+            <AthleteCard 
+              key={athlete.id} 
+              athlete={athlete} 
+              evaluations={evaluations} 
+              onDelete={onDeleteAthlete}
+              onEdit={onEditAthlete}
+              onSelect={onSelectAthlete}
+            />
           ))
         ) : (
           <div className="col-span-full py-20 text-center border border-dashed border-white/10">

@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Dumbbell, Search, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { Plus, Trash2, Dumbbell, Search, AlertCircle, CheckCircle2, X, Edit2 } from 'lucide-react';
 import { Exercise } from '../types';
 
 interface ExerciseManagementProps {
   exercises: Exercise[];
   onAdd: (exercise: Exercise) => void;
+  onUpdate: (exercise: Exercise) => void;
   onDelete: (id: string) => void;
 }
 
-export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercises, onAdd, onDelete }) => {
+export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercises, onAdd, onUpdate, onDelete }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -26,20 +28,49 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
     e.preventDefault();
     if (!newName.trim()) return;
 
-    const newExercise: Exercise = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: newName,
-      description: newDescription,
-      category: newCategory,
-      requiresLoad: newRequiresLoad,
-    };
+    if (editingExercise) {
+      onUpdate({
+        ...editingExercise,
+        name: newName,
+        description: newDescription,
+        category: newCategory,
+        requiresLoad: newRequiresLoad,
+      });
+    } else {
+      const newExercise: Exercise = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: newName,
+        description: newDescription,
+        category: newCategory,
+        requiresLoad: newRequiresLoad,
+      };
+      onAdd(newExercise);
+    }
 
-    onAdd(newExercise);
     setNewName('');
     setNewDescription('');
     setNewCategory('Empuje');
     setNewRequiresLoad(false);
     setIsAdding(false);
+    setEditingExercise(null);
+  };
+
+  const handleEdit = (ex: Exercise) => {
+    setEditingExercise(ex);
+    setNewName(ex.name);
+    setNewDescription(ex.description || '');
+    setNewCategory(ex.category);
+    setNewRequiresLoad(ex.requiresLoad);
+    setIsAdding(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsAdding(false);
+    setEditingExercise(null);
+    setNewName('');
+    setNewDescription('');
+    setNewCategory('Empuje');
+    setNewRequiresLoad(false);
   };
 
   const confirmDelete = (id: string) => {
@@ -82,7 +113,13 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
             key={ex.id}
             className="bg-surface-card p-6 rounded-2xl border border-white/5 group relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+              <button 
+                onClick={() => handleEdit(ex)}
+                className="text-white/20 hover:text-accent p-2 transition-colors"
+              >
+                <Edit2 size={18} />
+              </button>
               <button 
                 onClick={() => setExerciseToDelete(ex.id)}
                 className="text-white/20 hover:text-red-400 p-2 transition-colors"
@@ -138,7 +175,7 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
       {isAdding && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div 
-            onClick={() => setIsAdding(false)}
+            onClick={handleCloseModal}
             className="absolute inset-0 bg-surface-dark/80 backdrop-blur-md"
           />
           <div 
@@ -147,8 +184,10 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent"></div>
             
             <div className="flex items-center justify-between mb-8">
-              <h2 className="font-headline text-2xl font-black uppercase italic tracking-tight">Nuevo Ejercicio</h2>
-              <button onClick={() => setIsAdding(false)} className="text-white/20 hover:text-white transition-colors">
+              <h2 className="font-headline text-2xl font-black uppercase italic tracking-tight">
+                {editingExercise ? 'Editar Ejercicio' : 'Nuevo Ejercicio'}
+              </h2>
+              <button onClick={handleCloseModal} className="text-white/20 hover:text-white transition-colors">
                 <X size={24} />
               </button>
             </div>
@@ -205,16 +244,16 @@ export const ExerciseManagement: React.FC<ExerciseManagementProps> = ({ exercise
               <div className="pt-4 flex gap-4">
                 <button 
                   type="button"
-                  onClick={() => setIsAdding(false)}
+                  onClick={handleCloseModal}
                   className="flex-1 bg-white/5 text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 bg-accent text-surface-dark py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(42,229,0,0.2)] hover:scale-[1.02] active:scale-95 transition-all"
+                  className="flex-1 bg-accent text-surface-dark py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(42,229,0,0.2)] hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                  <CheckCircle2 size={20} /> Crear
+                  <CheckCircle2 size={20} /> {editingExercise ? 'Actualizar' : 'Crear'}
                 </button>
               </div>
             </form>

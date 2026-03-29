@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MoreVertical, Activity, Zap, AlertTriangle, Trash2, BrainCircuit, X, Loader2 } from 'lucide-react';
+import { MoreVertical, Activity, Zap, AlertTriangle, Trash2, BrainCircuit, X, Loader2, Edit2, Eye } from 'lucide-react';
 import { Athlete, Evaluation } from '../types';
 import { calculateAge } from '../utils/athleteUtils';
 import { analyzeAthletePerformance } from '../services/aiService';
@@ -9,9 +9,11 @@ interface AthleteCardProps {
   athlete: Athlete;
   evaluations: Evaluation[];
   onDelete: (id: string) => void;
+  onEdit: (athlete: Athlete) => void;
+  onSelect: (athlete: Athlete) => void;
 }
 
-export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, evaluations, onDelete }) => {
+export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, evaluations, onDelete, onEdit, onSelect }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
@@ -75,13 +77,25 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, evaluations, 
         </div>
         <div className="flex gap-2">
           <button 
+            onClick={() => onEdit(athlete)}
+            className="text-white/20 hover:text-accent transition-colors"
+            title="Editar Alumno"
+          >
+            <Edit2 size={18} />
+          </button>
+          <button 
+            onClick={() => onSelect(athlete)}
+            className="text-white/20 hover:text-primary-blue transition-colors"
+            title="Ver Detalles"
+          >
+            <Eye size={18} />
+          </button>
+          <button 
             onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
             className="text-white/20 hover:text-red-400 transition-colors"
+            title="Eliminar Alumno"
           >
             <Trash2 size={18} />
-          </button>
-          <button className="text-white/40 hover:text-white transition-colors">
-            <MoreVertical size={20} />
           </button>
         </div>
       </div>

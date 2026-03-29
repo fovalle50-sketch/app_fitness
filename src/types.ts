@@ -7,6 +7,7 @@ export interface Athlete {
   gender: 'Masculino' | 'Femenino';
   weight: number;
   activityLevel: number;
+  level: 1 | 2 | 3 | 4 | 5;
   status: 'Pro Elite' | 'Alto Rendimiento' | 'Fatiga Detectada';
   imageUrl: string;
 }

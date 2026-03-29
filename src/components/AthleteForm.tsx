@@ -3,35 +3,38 @@ import { UserPlus, Camera, X, Check } from 'lucide-react';
 import { Athlete } from '../types';
 
 interface AthleteFormProps {
+  athlete?: Athlete;
   onAdd: (athlete: Athlete) => void;
   onCancel: () => void;
 }
 
-export const AthleteForm: React.FC<AthleteFormProps> = ({ onAdd, onCancel }) => {
+export const AthleteForm: React.FC<AthleteFormProps> = ({ athlete, onAdd, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    birthDate: '',
-    gender: 'Masculino' as const,
-    weight: '',
-    status: 'Alto Rendimiento' as const,
+    name: athlete?.name || '',
+    birthDate: athlete?.birthDate || '',
+    gender: (athlete?.gender || 'Masculino') as 'Masculino' | 'Femenino',
+    weight: athlete?.weight?.toString() || '',
+    level: athlete?.level || 1,
+    status: (athlete?.status || 'Alto Rendimiento') as 'Pro Elite' | 'Alto Rendimiento' | 'Fatiga Detectada',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.birthDate || !formData.weight) return;
 
-    const newAthlete: Athlete = {
-      id: Math.random().toString(36).substr(2, 9),
+    const athleteData: Athlete = {
+      id: athlete?.id || Math.random().toString(36).substr(2, 9),
       name: formData.name,
       birthDate: formData.birthDate,
       gender: formData.gender,
       weight: parseFloat(formData.weight),
-      activityLevel: 0,
+      activityLevel: athlete?.activityLevel || 0,
+      level: formData.level as 1 | 2 | 3 | 4 | 5,
       status: formData.status,
-      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(formData.name)}/200/200`,
+      imageUrl: athlete?.imageUrl || `https://picsum.photos/seed/${encodeURIComponent(formData.name)}/200/200`,
     };
 
-    onAdd(newAthlete);
+    onAdd(athleteData);
   };
 
   return (
@@ -105,6 +108,26 @@ export const AthleteForm: React.FC<AthleteFormProps> = ({ onAdd, onCancel }) => 
               className="w-full bg-surface-dark border-none text-white p-4 rounded-lg focus:ring-2 focus:ring-accent/50 transition-all font-semibold"
               placeholder="75.0"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-widest text-white/40 px-1">Nivel del Alumno</label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, level: lvl as any })}
+                  className={`flex-1 py-3 rounded-lg font-bold transition-all ${
+                    formData.level === lvl 
+                      ? 'bg-accent text-surface-dark shadow-[0_0_15px_rgba(42,229,0,0.3)]' 
+                      : 'bg-surface-dark text-white/40 hover:bg-white/5'
+                  }`}
+                >
+                  {lvl}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">
